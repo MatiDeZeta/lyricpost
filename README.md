@@ -1,11 +1,22 @@
 # LyricPost
 
-> A modern, beautiful Spotify-like lyrics image generator built with React, TypeScript, and TailwindCSS.
+> A modern lyrics image generator — fork & redesign by [MatiDeZeta](https://github.com/MatiDeZeta), originally by [palinkiewicz](https://github.com/palinkiewicz/lyricpost).
 
-## Introduction
+## About
 
-LyricPost is a web application that allows users to generate Spotify-like lyrics images.
-Search for a song or paste a Spotify link, select lyrics lines, and generate a stylish image with customizable colors, gradients, fonts, and more.
+LyricPost lets you search for any song, pick your favourite lines, and export a beautiful shareable image. This fork features a complete UI redesign with a monochrome dark theme and several new features.
+
+### What's new in this fork
+
+- **Monochrome dark theme** — fully redesigned UI with a sleek gray palette
+- **Shuffle color** — randomize the background color with one click
+- **Reset settings** — restore all image controls to defaults instantly
+- **Copy lyrics as text** — copy selected lyrics to your clipboard from the lyrics screen
+- **Inline step indicator** — compact breadcrumb navigation in the header
+- **Grid-based song results** — album art cards instead of a flat list
+- **Improved animations** — smoother transitions with AnimatePresence throughout
+- **Better empty states** — clear messaging and icons when no lyrics are found
+- **Refined image preview** — container with visual boundary for the export area
 
 ## Tech Stack
 
@@ -21,14 +32,13 @@ Search for a song or paste a Spotify link, select lyrics lines, and generate a s
 - **Song search** via [Last.fm](https://www.last.fm/) API
 - **Spotify link support** — paste a Spotify track URL to load a song directly
 - **Lyrics fetching** from [lrclib](https://lrclib.net/docs)
-- **Lyrics line selection** with select all / deselect all
-- **Customizable image** — solid colors, gradients, light/dark text, Spotify tag, background shadow
-- **Font controls** — choose between Poppins, Inter, or Playfair Display; adjustable font size
+- **Lyrics line selection** with select all / deselect all / copy as text
+- **Customizable image** — solid colors, gradients, light/dark text, Spotify tag
+- **Shuffle & reset** — quick color randomizer and one-click settings reset
+- **Font controls** — Poppins, Inter, or Playfair Display; adjustable font size
 - **Aspect ratio presets** — Free, 1:1, 4:5, 9:16
 - **Width slider** for precise image sizing
 - **Download** high-quality PNG or **copy to clipboard**
-- **Image history** — last 10 generated images saved locally
-- **Dark / light theme** with system preference detection
 - **Keyboard shortcuts** — Escape to go back
 - **CJK font support** — Chinese (TW/CN/HK), Japanese, Korean glyph standards
 - **Mobile-first responsive design**
@@ -37,7 +47,7 @@ Search for a song or paste a Spotify link, select lyrics lines, and generate a s
 
 1. Clone the repo
    ```bash
-   git clone https://github.com/palinkiewicz/lyricpost
+   git clone https://github.com/MatiDeZeta/lyricpost
    cd lyricpost
    ```
 2. Install dependencies
@@ -60,6 +70,11 @@ npm run build
 ```
 
 Output is in the `dist/` folder.
+
+## Credits
+
+- **Original project** — [palinkiewicz/lyricpost](https://github.com/palinkiewicz/lyricpost)
+- **Fork & redesign** — [MatiDeZeta/lyricpost](https://github.com/MatiDeZeta/lyricpost)
 
 ## Disclaimer
 

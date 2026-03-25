@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, FileText, ClipboardCopy } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useLyrics } from '@/hooks/useLyrics';
 
@@ -109,12 +109,30 @@ export default function LyricsScreen() {
           <span className="text-[11px] text-neutral-600 tabular-nums">
             {selectedLyricIndices.size} of {lyrics.length} selected
           </span>
-          <button
-            onClick={allSelected ? deselectAllLyrics : selectAllLyrics}
-            className="text-[11px] font-medium text-neutral-500 hover:text-white transition-colors"
-          >
-            {allSelected ? 'Clear' : 'All'}
-          </button>
+          <div className="flex items-center gap-2">
+            {hasSelection && (
+              <button
+                onClick={() => {
+                  const text = lyrics
+                    .filter((_, i) => selectedLyricIndices.has(i))
+                    .map((l) => l.text)
+                    .join('\n');
+                  navigator.clipboard.writeText(text);
+                }}
+                className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors flex items-center gap-1"
+                title="Copy selected lyrics"
+              >
+                <ClipboardCopy size={10} />
+                Copy
+              </button>
+            )}
+            <button
+              onClick={allSelected ? deselectAllLyrics : selectAllLyrics}
+              className="text-[11px] font-medium text-neutral-500 hover:text-white transition-colors"
+            >
+              {allSelected ? 'Clear' : 'All'}
+            </button>
+          </div>
         </div>
       )}
 

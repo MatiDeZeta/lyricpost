@@ -76,6 +76,8 @@ interface AppState {
   imageSettings: ImageSettings;
   updateImageSettings: (partial: Partial<ImageSettings>) => void;
   randomizeColor: () => void;
+  resetImageSettings: () => void;
+  shuffleColor: () => void;
 
   // Loading / error
   isLoading: boolean;
@@ -140,6 +142,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     const color = colors[Math.floor(Math.random() * colors.length)];
     set((state) => ({
       imageSettings: { ...state.imageSettings, backgroundColor: color },
+    }));
+  },
+  resetImageSettings: () => set({ imageSettings: { ...DEFAULT_IMAGE_SETTINGS } }),
+  shuffleColor: () => {
+    const colors = get().presetColors;
+    const current = get().imageSettings.backgroundColor;
+    let color = current;
+    while (color === current && colors.length > 1) {
+      color = colors[Math.floor(Math.random() * colors.length)];
+    }
+    set((state) => ({
+      imageSettings: { ...state.imageSettings, backgroundColor: color, useGradient: false },
     }));
   },
 

@@ -7,6 +7,8 @@ import {
   Palette,
   Type,
   Languages,
+  Shuffle,
+  RotateCcw,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useImageExport } from '@/hooks/useImageExport';
@@ -42,6 +44,8 @@ export default function ImageScreen() {
     setStep,
     isLoading,
     loadingMessage,
+    shuffleColor,
+    resetImageSettings,
   } = useAppStore();
   const { downloadImage, copyToClipboard } = useImageExport();
 
@@ -143,7 +147,15 @@ export default function ImageScreen() {
       {/* Controls */}
       <div className="space-y-2">
         {/* Color selection */}
-        <ControlSection icon={Palette} label="Color">
+        <ControlSection icon={Palette} label="Color" action={
+          <button
+            onClick={shuffleColor}
+            className="p-1 rounded-md hover:bg-white/[0.06] transition-colors"
+            title="Random color"
+          >
+            <Shuffle size={11} className="text-neutral-600" />
+          </button>
+        }>
           <div className="flex flex-wrap gap-1.5">
             {presetColors.map((color) => (
               <button
@@ -347,6 +359,15 @@ export default function ImageScreen() {
           </div>
         </ControlSection>
 
+        {/* Reset */}
+        <button
+          onClick={resetImageSettings}
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-medium text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03] transition-all"
+        >
+          <RotateCcw size={11} />
+          Reset to defaults
+        </button>
+
         {/* Language */}
         <ControlSection icon={Languages} label="Glyphs">
           <div className="flex gap-1.5">
@@ -379,11 +400,13 @@ function ControlSection({
   icon: Icon,
   label,
   compact,
+  action,
   children,
 }: {
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   compact?: boolean;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -395,12 +418,13 @@ function ControlSection({
       <div
         className={`flex items-center ${compact ? 'justify-between' : 'gap-1.5 mb-2.5'}`}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-1">
           {Icon && <Icon size={12} className="text-neutral-600" />}
           <span className="text-[11px] font-medium text-neutral-500">
             {label}
           </span>
         </div>
+        {action}
         {compact && children}
       </div>
       {!compact && children}
