@@ -16,11 +16,11 @@ export default function SongResultsScreen() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 40 }}
+      initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-2xl mx-auto px-5 pb-8"
+      exit={{ opacity: 0, x: -30 }}
+      transition={{ duration: 0.25 }}
+      className="max-w-2xl mx-auto px-5 pb-10"
     >
       {/* Header */}
       <div className="flex items-center gap-3 py-5">
@@ -31,42 +31,38 @@ export default function SongResultsScreen() {
         >
           <ArrowLeft size={16} className="text-neutral-500" />
         </button>
-        <div>
-          <h2 className="text-sm font-semibold text-white">
-            Select a song
-          </h2>
-          <p className="text-[11px] text-neutral-600">{songs.length} results</p>
-        </div>
+        <span className="text-[13px] font-medium text-neutral-400">
+          {songs.length} results — pick one
+        </span>
       </div>
 
-      {/* Song list */}
-      <div className="flex flex-col gap-1">
+      {/* Song grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {songs.map((song, index) => (
           <motion.button
             key={`${song.name}-${index}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.04, duration: 0.25 }}
             onClick={() => handleSelectSong(index)}
-            className="group flex items-center gap-3.5 text-left rounded-xl p-2.5 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all duration-150 cursor-pointer"
+            className="group text-left rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.04] hover:border-white/[0.1] hover:bg-white/[0.05] active:scale-[0.97] transition-all duration-200 cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/[0.04] shrink-0">
+            <div className="aspect-square overflow-hidden bg-white/[0.03]">
               <img
                 src={song.albumCoverUrl || FALLBACK_COVER}
                 alt={`${song.name} cover`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                 loading="lazy"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-white truncate">
+            <div className="p-2.5">
+              <div className="text-[12px] font-semibold text-white truncate leading-tight">
                 {song.name}
               </div>
               <div className="text-[11px] text-neutral-500 truncate mt-0.5">
                 {song.artists.map((a) => a.name).join(', ')}
               </div>
             </div>
-            <ArrowLeft size={14} className="text-neutral-700 rotate-180 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
           </motion.button>
         ))}
       </div>

@@ -77,11 +77,11 @@ export default function ImageScreen() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 40 }}
+      initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-2xl mx-auto px-5 pb-8"
+      exit={{ opacity: 0, x: -30 }}
+      transition={{ duration: 0.25 }}
+      className="max-w-2xl mx-auto px-5 pb-10"
     >
       {/* Header */}
       <div className="flex items-center justify-between py-5">
@@ -93,33 +93,33 @@ export default function ImageScreen() {
           >
             <ArrowLeft size={16} className="text-neutral-500" />
           </button>
-          <h2 className="text-sm font-semibold text-white">Export</h2>
+          <span className="text-[13px] font-medium text-neutral-400">Customize & export</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => copyToClipboard(imageRef.current)}
             disabled={isLoading}
-            className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] transition-colors disabled:opacity-40"
+            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors disabled:opacity-30"
             aria-label="Copy to clipboard"
             title="Copy to clipboard"
           >
-            <Copy size={15} className="text-neutral-400" />
+            <Copy size={14} className="text-neutral-500" />
           </button>
           <button
             onClick={() => downloadImage(imageRef.current)}
             disabled={isLoading}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white text-black text-[12px] font-semibold hover:bg-neutral-200 active:scale-[0.97] transition-all disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white text-black text-[12px] font-semibold hover:bg-neutral-100 active:scale-[0.97] transition-all disabled:opacity-30"
           >
             <Download size={13} />
-            Download
+            Save
           </button>
         </div>
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <div className="flex items-center gap-2 justify-center py-4 text-[12px] text-neutral-500">
-          <div className="w-3.5 h-3.5 border-[1.5px] border-white/30 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center gap-2 justify-center py-4 text-[12px] text-neutral-600">
+          <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
           {loadingMessage}
         </div>
       )}
@@ -127,7 +127,7 @@ export default function ImageScreen() {
       {/* Image preview */}
       <div
         ref={containerRef}
-        className="flex justify-center py-4"
+        className="flex justify-center py-6 rounded-2xl bg-white/[0.02] border border-white/[0.03] mb-5"
       >
         <div
           style={{
@@ -141,7 +141,7 @@ export default function ImageScreen() {
       </div>
 
       {/* Controls */}
-      <div className="space-y-3 mt-2">
+      <div className="space-y-2">
         {/* Color selection */}
         <ControlSection icon={Palette} label="Color">
           <div className="flex flex-wrap gap-1.5">

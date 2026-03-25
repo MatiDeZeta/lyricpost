@@ -1,27 +1,17 @@
+import { useAppStore } from '@/store/useAppStore';
 import StepIndicator from './StepIndicator';
 
 export default function Header() {
+  const currentStep = useAppStore((s) => s.currentStep);
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0a0a]/80 border-b border-white/[0.04]">
-      <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
-            <span className="text-[10px] font-black text-black tracking-tighter">LP</span>
-          </div>
-          <h1 className="text-sm font-semibold text-white tracking-tight">
-            LyricPost
-          </h1>
-        </div>
-        <a
-          href="https://github.com/palinkiewicz/lyricpost"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[11px] font-medium text-neutral-500 hover:text-neutral-300 transition-colors"
-        >
-          GitHub
-        </a>
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0a0a]/80 border-b border-white/[0.03]">
+      <div className="max-w-2xl mx-auto px-5 h-12 flex items-center justify-between">
+        <span className="text-[13px] font-semibold text-neutral-300 tracking-tight select-none">
+          lyricpost
+        </span>
+        {currentStep > 1 && <StepIndicator />}
       </div>
-      <StepIndicator />
     </header>
   );
 }
