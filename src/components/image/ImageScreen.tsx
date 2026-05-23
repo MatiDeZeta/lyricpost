@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Type, Layers, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { useImageExport, canShareFiles } from '@/hooks/useImageExport';
+import { canShareFiles } from '@/hooks/useImageExport';
 import { getDisplayCoverUrl } from '@/services/coverArt';
 import { extractPalette } from '@/utils/extractPalette';
 import { readFileAsDataUrl } from '@/utils/storage';
@@ -19,7 +19,6 @@ export default function ImageScreen() {
 
   const songs = useAppStore((s) => s.songs);
   const selectedSongIndex = useAppStore((s) => s.selectedSongIndex);
-  const imageSettings = useAppStore((s) => s.imageSettings);
   const updateImageSettings = useAppStore((s) => s.updateImageSettings);
   const setStep = useAppStore((s) => s.setStep);
   const isLoading = useAppStore((s) => s.isLoading);

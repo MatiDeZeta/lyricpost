@@ -1,5 +1,5 @@
 import { ArrowLeft, Download, Copy, Share2 } from 'lucide-react';
-import { useImageExport, canShareFiles } from '@/hooks/useImageExport';
+import { useImageExport } from '@/hooks/useImageExport';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function ImageExportBar({
