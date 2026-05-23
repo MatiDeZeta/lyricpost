@@ -16,8 +16,9 @@ import {
   Sparkles,
   Layers,
   AlignLeft,
-  Instagram,
-  Twitter,
+  Square,
+  Smartphone,
+  Monitor,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useImageExport, canShareFiles } from '@/hooks/useImageExport';
@@ -42,11 +43,11 @@ const RATIO_GROUPS: {
   {
     label: 'Platforms',
     ratios: [
-      { value: 'ig-post', label: 'IG Post', icon: Instagram },
-      { value: 'ig-portrait', label: 'IG 4:5', icon: Instagram },
-      { value: 'ig-story', label: 'IG Story', icon: Instagram },
-      { value: 'x-post', label: 'X', icon: Twitter },
-      { value: 'tiktok', label: 'TikTok' },
+      { value: 'ig-post', label: 'IG Post', icon: Square },
+      { value: 'ig-portrait', label: 'IG 4:5', icon: Square },
+      { value: 'ig-story', label: 'IG Story', icon: Smartphone },
+      { value: 'x-post', label: 'X', icon: Monitor },
+      { value: 'tiktok', label: 'TikTok', icon: Smartphone },
     ],
   },
 ];
