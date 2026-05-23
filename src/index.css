@@ -68,3 +68,29 @@ input[type="range"]::-webkit-slider-runnable-track {
 ::selection {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Reorder grab cursor */
+.lyric-reorder-item {
+  cursor: grab;
+}
+.lyric-reorder-item:active {
+  cursor: grabbing;
+}
+
+/* Hide native color input UI inside swatch buttons */
+input[type="color"].sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

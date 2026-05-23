@@ -1,16 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Link2, ArrowRight, ExternalLink } from 'lucide-react';
+import { Search, Link2, ArrowRight, ExternalLink, X, Sparkles } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useSearch } from '@/hooks/useSearch';
 
 type Tab = 'search' | 'link';
 
+const SAMPLE_SUGGESTIONS = [
+  'Radiohead Creep',
+  'Tame Impala The Less I Know',
+  'Frank Ocean Pyramids',
+  'Mitski Nobody',
+  'The Strokes Reptilia',
+  'Phoebe Bridgers Motion Sickness',
+];
+
 export default function SearchScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('search');
   const [query, setQuery] = useState('');
   const [spotifyUrl, setSpotifyUrl] = useState('');
-  const { isLoading, error, loadingMessage } = useAppStore();
+  const isLoading = useAppStore((s) => s.isLoading);
+  const error = useAppStore((s) => s.error);
+  const loadingMessage = useAppStore((s) => s.loadingMessage);
+  const recentSearches = useAppStore((s) => s.recentSearches);
+  const removeRecentSearch = useAppStore((s) => s.removeRecentSearch);
+  const clearRecentSearches = useAppStore((s) => s.clearRecentSearches);
   const { searchByName, searchBySpotifyLink } = useSearch();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,13 +42,18 @@ export default function SearchScreen() {
     if (spotifyUrl.trim()) searchBySpotifyLink(spotifyUrl);
   };
 
+  const runChip = (q: string) => {
+    setQuery(q);
+    searchByName(q);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex flex-col items-center justify-center min-h-[70vh] px-5"
+      className="flex flex-col items-center justify-center min-h-[70vh] px-5 py-10"
     >
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -50,7 +69,6 @@ export default function SearchScreen() {
         </p>
       </motion.div>
 
-      {/* Tabs */}
       <div className="flex gap-4 mb-5">
         <button
           onClick={() => setActiveTab('search')}
@@ -75,7 +93,6 @@ export default function SearchScreen() {
         </button>
       </div>
 
-      {/* Forms */}
       <div className="w-full max-w-sm">
         <AnimatePresence mode="wait">
           {activeTab === 'search' && (
@@ -150,9 +167,80 @@ export default function SearchScreen() {
             </motion.form>
           )}
         </AnimatePresence>
+
+        {activeTab === 'search' && recentSearches.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, delay: 0.05 }}
+            className="mt-4"
+          >
+            <div className="flex items-center justify-between mb-2 px-0.5">
+              <span className="text-[10px] uppercase tracking-wider text-neutral-700 font-semibold">
+                Recent
+              </span>
+              <button
+                onClick={clearRecentSearches}
+                className="text-[10px] text-neutral-700 hover:text-neutral-400 transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {recentSearches.map((q) => (
+                <div
+                  key={q}
+                  className="group flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.05] hover:bg-white/[0.07] hover:border-white/[0.1] transition-all overflow-hidden"
+                >
+                  <button
+                    onClick={() => runChip(q)}
+                    disabled={isLoading}
+                    className="text-[11px] text-neutral-400 pl-2.5 py-1 pr-1 hover:text-white transition-colors max-w-[180px] truncate disabled:opacity-40"
+                  >
+                    {q}
+                  </button>
+                  <button
+                    onClick={() => removeRecentSearch(q)}
+                    className="pr-2 py-1 text-neutral-700 hover:text-neutral-300 transition-colors"
+                    aria-label={`Remove ${q}`}
+                  >
+                    <X size={9} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'search' && recentSearches.length === 0 && !error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            className="mt-6"
+          >
+            <div className="flex items-center gap-1.5 mb-2 px-0.5">
+              <Sparkles size={10} className="text-neutral-700" />
+              <span className="text-[10px] uppercase tracking-wider text-neutral-700 font-semibold">
+                Try one
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {SAMPLE_SUGGESTIONS.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => runChip(q)}
+                  disabled={isLoading}
+                  className="text-[11px] text-neutral-500 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:text-neutral-200 hover:border-white/[0.08] transition-all disabled:opacity-40"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
 
-      {/* Error */}
       {error && (
         <motion.p
           initial={{ opacity: 0 }}
@@ -163,7 +251,6 @@ export default function SearchScreen() {
         </motion.p>
       )}
 
-      {/* Loading message */}
       {isLoading && loadingMessage && (
         <motion.p
           initial={{ opacity: 0 }}

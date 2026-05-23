@@ -1,5 +1,14 @@
 import { create } from 'zustand';
-import type { Song, ImageSettings, WizardStep, HistoryEntry } from '@/types';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type {
+  Song,
+  ImageSettings,
+  WizardStep,
+  HistoryEntry,
+  Template,
+  Toast,
+  ToastKind,
+} from '@/types';
 
 const PRESET_COLORS = [
   '#1a1a1a',
@@ -20,38 +29,78 @@ const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
   backgroundColor: PRESET_COLORS[0],
   gradient: null,
   useGradient: false,
+  backgroundImage: null,
   lightText: true,
   showSpotifyTag: false,
   showBackground: false,
+  showWatermark: false,
   width: 320,
   fontSize: 20,
   fontFamily: 'Poppins',
   aspectRatio: 'free',
   lang: 'en',
+  format: 'png',
+  resolution: 4,
 };
 
-const MAX_HISTORY = 10;
+const BUILTIN_TEMPLATES: Template[] = [
+  {
+    id: 'builtin-minimal',
+    name: 'Minimal',
+    builtIn: true,
+    settings: {
+      backgroundColor: '#0a0a0a',
+      useGradient: false,
+      lightText: true,
+      showSpotifyTag: false,
+      showBackground: false,
+      showWatermark: false,
+      fontFamily: 'Inter',
+      fontSize: 18,
+      aspectRatio: 'free',
+      width: 320,
+    },
+  },
+  {
+    id: 'builtin-tape',
+    name: 'Tape',
+    builtIn: true,
+    settings: {
+      backgroundColor: '#1c1917',
+      gradient: { from: '#1c1917', to: '#0a0a0a', angle: 180 },
+      useGradient: true,
+      lightText: true,
+      showSpotifyTag: true,
+      showBackground: true,
+      showWatermark: false,
+      fontFamily: 'Playfair Display',
+      fontSize: 22,
+      aspectRatio: '4:5',
+      width: 360,
+    },
+  },
+  {
+    id: 'builtin-poster',
+    name: 'Poster',
+    builtIn: true,
+    settings: {
+      backgroundColor: '#18181b',
+      gradient: { from: '#18181b', to: '#3a3a3a', angle: 135 },
+      useGradient: true,
+      lightText: true,
+      showSpotifyTag: false,
+      showBackground: true,
+      showWatermark: true,
+      fontFamily: 'Poppins',
+      fontSize: 24,
+      aspectRatio: '9:16',
+      width: 360,
+    },
+  },
+];
 
-function loadHistory(): HistoryEntry[] {
-  try {
-    const raw = localStorage.getItem('lyricpost-history');
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveHistory(entries: HistoryEntry[]) {
-  localStorage.setItem('lyricpost-history', JSON.stringify(entries));
-}
-
-function loadTheme(): 'light' | 'dark' {
-  const saved = localStorage.getItem('lyricpost-theme');
-  if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
+const MAX_HISTORY = 30;
+const MAX_RECENT_SEARCHES = 6;
 
 interface AppState {
   // Wizard
@@ -66,18 +115,33 @@ interface AppState {
   usedDirectLink: boolean;
   setUsedDirectLink: (v: boolean) => void;
 
+  // Recent searches (persisted)
+  recentSearches: string[];
+  addRecentSearch: (q: string) => void;
+  removeRecentSearch: (q: string) => void;
+  clearRecentSearches: () => void;
+
   // Lyrics selection
   selectedLyricIndices: Set<number>;
   toggleLyricIndex: (index: number) => void;
   selectAllLyrics: () => void;
   deselectAllLyrics: () => void;
 
-  // Image settings
+  // Custom ordering of selected lyrics (indices into songs[i].lyrics)
+  lyricOrder: number[];
+  setLyricOrder: (order: number[]) => void;
+
+  // Inline edits to lyric text without mutating original song fetch
+  updateLyricText: (index: number, text: string) => void;
+  addCustomLyricLine: (text: string) => void;
+
+  // Image settings (persisted)
   imageSettings: ImageSettings;
   updateImageSettings: (partial: Partial<ImageSettings>) => void;
   randomizeColor: () => void;
   resetImageSettings: () => void;
   shuffleColor: () => void;
+  applyTemplate: (template: Template) => void;
 
   // Loading / error
   isLoading: boolean;
@@ -86,107 +150,258 @@ interface AppState {
   error: string | null;
   setError: (error: string | null) => void;
 
-  // Theme
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
-
-  // History
+  // History (persisted)
   history: HistoryEntry[];
   addHistoryEntry: (entry: HistoryEntry) => void;
+  removeHistoryEntry: (id: string) => void;
   clearHistory: () => void;
+
+  // Templates (persisted)
+  templates: Template[];
+  addTemplate: (name: string, settings: ImageSettings) => void;
+  removeTemplate: (id: string) => void;
+
+  // Toasts
+  toasts: Toast[];
+  pushToast: (kind: ToastKind, message: string) => void;
+  dismissToast: (id: string) => void;
+
+  // UI: drawer
+  isHistoryOpen: boolean;
+  openHistoryDrawer: () => void;
+  closeHistoryDrawer: () => void;
 
   // Presets
   presetColors: string[];
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
-  // Wizard
-  currentStep: 1,
-  setStep: (step) => set({ currentStep: step }),
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      // Wizard
+      currentStep: 1,
+      setStep: (step) => set({ currentStep: step }),
 
-  // Search
-  songs: [],
-  setSongs: (songs) => set({ songs }),
-  selectedSongIndex: null,
-  selectSong: (index) => set({ selectedSongIndex: index }),
-  usedDirectLink: false,
-  setUsedDirectLink: (v) => set({ usedDirectLink: v }),
+      // Search
+      songs: [],
+      setSongs: (songs) => set({ songs }),
+      selectedSongIndex: null,
+      selectSong: (index) => set({ selectedSongIndex: index }),
+      usedDirectLink: false,
+      setUsedDirectLink: (v) => set({ usedDirectLink: v }),
 
-  // Lyrics selection
-  selectedLyricIndices: new Set(),
-  toggleLyricIndex: (index) =>
-    set((state) => {
-      const next = new Set(state.selectedLyricIndices);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return { selectedLyricIndices: next };
+      // Recent searches
+      recentSearches: [],
+      addRecentSearch: (q) => {
+        const cleaned = q.trim();
+        if (!cleaned) return;
+        const next = [
+          cleaned,
+          ...get().recentSearches.filter(
+            (r) => r.toLowerCase() !== cleaned.toLowerCase()
+          ),
+        ].slice(0, MAX_RECENT_SEARCHES);
+        set({ recentSearches: next });
+      },
+      removeRecentSearch: (q) =>
+        set((state) => ({
+          recentSearches: state.recentSearches.filter((r) => r !== q),
+        })),
+      clearRecentSearches: () => set({ recentSearches: [] }),
+
+      // Lyrics selection
+      selectedLyricIndices: new Set(),
+      toggleLyricIndex: (index) =>
+        set((state) => {
+          const next = new Set(state.selectedLyricIndices);
+          let order = [...state.lyricOrder];
+          if (next.has(index)) {
+            next.delete(index);
+            order = order.filter((i) => i !== index);
+          } else {
+            next.add(index);
+            order.push(index);
+          }
+          return { selectedLyricIndices: next, lyricOrder: order };
+        }),
+      selectAllLyrics: () =>
+        set((state) => {
+          const song = state.songs[state.selectedSongIndex ?? -1];
+          if (!song?.lyrics) return {};
+          const all = song.lyrics.map((_, i) => i);
+          return {
+            selectedLyricIndices: new Set(all),
+            lyricOrder: all,
+          };
+        }),
+      deselectAllLyrics: () =>
+        set({ selectedLyricIndices: new Set(), lyricOrder: [] }),
+
+      // Custom order
+      lyricOrder: [],
+      setLyricOrder: (order) => set({ lyricOrder: order }),
+
+      updateLyricText: (index, text) =>
+        set((state) => {
+          if (state.selectedSongIndex === null) return {};
+          const songs = [...state.songs];
+          const song = songs[state.selectedSongIndex];
+          if (!song?.lyrics) return {};
+          const lyrics = [...song.lyrics];
+          if (!lyrics[index]) return {};
+          lyrics[index] = { ...lyrics[index], text };
+          songs[state.selectedSongIndex] = { ...song, lyrics };
+          return { songs };
+        }),
+
+      addCustomLyricLine: (text) =>
+        set((state) => {
+          if (state.selectedSongIndex === null) return {};
+          const songs = [...state.songs];
+          const song = songs[state.selectedSongIndex];
+          if (!song) return {};
+          const lyrics = song.lyrics ? [...song.lyrics] : [];
+          const newIndex = lyrics.length;
+          lyrics.push({ time: null, text });
+          songs[state.selectedSongIndex] = { ...song, lyrics };
+          const selected = new Set(state.selectedLyricIndices);
+          selected.add(newIndex);
+          return {
+            songs,
+            selectedLyricIndices: selected,
+            lyricOrder: [...state.lyricOrder, newIndex],
+          };
+        }),
+
+      // Image settings
+      imageSettings: { ...DEFAULT_IMAGE_SETTINGS },
+      updateImageSettings: (partial) =>
+        set((state) => ({
+          imageSettings: { ...state.imageSettings, ...partial },
+        })),
+      randomizeColor: () => {
+        const colors = get().presetColors;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        set((state) => ({
+          imageSettings: { ...state.imageSettings, backgroundColor: color },
+        }));
+      },
+      resetImageSettings: () =>
+        set({ imageSettings: { ...DEFAULT_IMAGE_SETTINGS } }),
+      shuffleColor: () => {
+        const colors = get().presetColors;
+        const current = get().imageSettings.backgroundColor;
+        let color = current;
+        while (color === current && colors.length > 1) {
+          color = colors[Math.floor(Math.random() * colors.length)];
+        }
+        set((state) => ({
+          imageSettings: {
+            ...state.imageSettings,
+            backgroundColor: color,
+            useGradient: false,
+            backgroundImage: null,
+          },
+        }));
+      },
+      applyTemplate: (template) =>
+        set((state) => ({
+          imageSettings: { ...state.imageSettings, ...template.settings },
+        })),
+
+      // Loading / error
+      isLoading: false,
+      loadingMessage: '',
+      setLoading: (loading, message = '') =>
+        set({ isLoading: loading, loadingMessage: message }),
+      error: null,
+      setError: (error) => set({ error }),
+
+      // History
+      history: [],
+      addHistoryEntry: (entry) =>
+        set((state) => {
+          const updated = [entry, ...state.history].slice(0, MAX_HISTORY);
+          return { history: updated };
+        }),
+      removeHistoryEntry: (id) =>
+        set((state) => ({
+          history: state.history.filter((h) => h.id !== id),
+        })),
+      clearHistory: () => set({ history: [] }),
+
+      // Templates
+      templates: BUILTIN_TEMPLATES,
+      addTemplate: (name, settings) =>
+        set((state) => {
+          const tpl: Template = {
+            id: crypto.randomUUID(),
+            name: name.trim() || 'Untitled',
+            settings,
+          };
+          return { templates: [...state.templates, tpl] };
+        }),
+      removeTemplate: (id) =>
+        set((state) => ({
+          templates: state.templates.filter((t) => t.id !== id || t.builtIn),
+        })),
+
+      // Toasts
+      toasts: [],
+      pushToast: (kind, message) => {
+        const id = crypto.randomUUID();
+        set((state) => ({
+          toasts: [...state.toasts, { id, kind, message }],
+        }));
+        setTimeout(() => {
+          set((state) => ({
+            toasts: state.toasts.filter((t) => t.id !== id),
+          }));
+        }, 2600);
+      },
+      dismissToast: (id) =>
+        set((state) => ({
+          toasts: state.toasts.filter((t) => t.id !== id),
+        })),
+
+      // UI: drawer
+      isHistoryOpen: false,
+      openHistoryDrawer: () => set({ isHistoryOpen: true }),
+      closeHistoryDrawer: () => set({ isHistoryOpen: false }),
+
+      // Presets
+      presetColors: PRESET_COLORS,
     }),
-  selectAllLyrics: () =>
-    set((state) => {
-      const song = state.songs[state.selectedSongIndex ?? -1];
-      if (!song?.lyrics) return {};
-      return {
-        selectedLyricIndices: new Set(song.lyrics.map((_, i) => i)),
-      };
-    }),
-  deselectAllLyrics: () => set({ selectedLyricIndices: new Set() }),
-
-  // Image settings
-  imageSettings: { ...DEFAULT_IMAGE_SETTINGS },
-  updateImageSettings: (partial) =>
-    set((state) => ({
-      imageSettings: { ...state.imageSettings, ...partial },
-    })),
-  randomizeColor: () => {
-    const colors = get().presetColors;
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    set((state) => ({
-      imageSettings: { ...state.imageSettings, backgroundColor: color },
-    }));
-  },
-  resetImageSettings: () => set({ imageSettings: { ...DEFAULT_IMAGE_SETTINGS } }),
-  shuffleColor: () => {
-    const colors = get().presetColors;
-    const current = get().imageSettings.backgroundColor;
-    let color = current;
-    while (color === current && colors.length > 1) {
-      color = colors[Math.floor(Math.random() * colors.length)];
+    {
+      name: 'lyricpost-store',
+      version: 2,
+      storage: createJSONStorage(() => localStorage),
+      // Only persist user-facing prefs/history/templates, not transient state
+      partialize: (state) => ({
+        imageSettings: state.imageSettings,
+        recentSearches: state.recentSearches,
+        history: state.history,
+        templates: state.templates,
+      }),
+      // Ensure built-in templates are always available even if storage
+      // was written by an older version that didn't include them.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AppState>;
+        const persistedTemplates = p.templates ?? [];
+        const builtInIds = new Set(BUILTIN_TEMPLATES.map((t) => t.id));
+        const userTemplates = persistedTemplates.filter(
+          (t) => !builtInIds.has(t.id)
+        );
+        return {
+          ...current,
+          ...p,
+          imageSettings: {
+            ...current.imageSettings,
+            ...(p.imageSettings ?? {}),
+          },
+          templates: [...BUILTIN_TEMPLATES, ...userTemplates],
+        };
+      },
     }
-    set((state) => ({
-      imageSettings: { ...state.imageSettings, backgroundColor: color, useGradient: false },
-    }));
-  },
-
-  // Loading / error
-  isLoading: false,
-  loadingMessage: '',
-  setLoading: (loading, message = '') =>
-    set({ isLoading: loading, loadingMessage: message }),
-  error: null,
-  setError: (error) => set({ error }),
-
-  // Theme
-  theme: loadTheme(),
-  toggleTheme: () =>
-    set((state) => {
-      const next = state.theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('lyricpost-theme', next);
-      return { theme: next };
-    }),
-
-  // History
-  history: loadHistory(),
-  addHistoryEntry: (entry) =>
-    set((state) => {
-      const updated = [entry, ...state.history].slice(0, MAX_HISTORY);
-      saveHistory(updated);
-      return { history: updated };
-    }),
-  clearHistory: () => {
-    saveHistory([]);
-    set({ history: [] });
-  },
-
-  // Presets
-  presetColors: PRESET_COLORS,
-}));
+  )
+);

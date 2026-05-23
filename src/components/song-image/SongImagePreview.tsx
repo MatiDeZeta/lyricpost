@@ -34,8 +34,13 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
     },
     ref
   ) => {
-    const { songs, selectedSongIndex, selectedLyricIndices, imageSettings } =
-      useAppStore();
+    const {
+      songs,
+      selectedSongIndex,
+      selectedLyricIndices,
+      lyricOrder,
+      imageSettings,
+    } = useAppStore();
 
     const song =
       selectedSongIndex !== null ? songs[selectedSongIndex] : null;
@@ -46,20 +51,32 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
     const artist =
       editableArtist ?? song.artists.map((a) => a.name).join(', ');
 
+    // Respect user-provided ordering (drag-reorder), fall back to natural order.
+    const orderedSelected = lyricOrder.length > 0
+      ? lyricOrder.filter((i) => selectedLyricIndices.has(i))
+      : (song.lyrics ?? [])
+          .map((_, i) => i)
+          .filter((i) => selectedLyricIndices.has(i));
+
     const selectedLyrics =
       editableLyrics ??
       (song.lyrics
-        ?.filter((_, i) => selectedLyricIndices.has(i))
-        .map((l) => l.text)
-        .join('\n') ||
-        'No lyrics selected\nType your own lyrics here');
+        ? orderedSelected
+            .map((i) => song.lyrics?.[i]?.text)
+            .filter(Boolean)
+            .join('\n') ||
+          'No lyrics selected\nType your own lyrics here'
+        : 'No lyrics selected\nType your own lyrics here');
 
     const {
       backgroundColor,
       gradient,
       useGradient,
+      backgroundImage,
       lightText,
       showSpotifyTag,
+      showBackground,
+      showWatermark,
       width,
       fontSize,
       fontFamily,
@@ -87,6 +104,11 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
       '1:1': '1 / 1',
       '4:5': '4 / 5',
       '9:16': '9 / 16',
+      'ig-post': '1 / 1',
+      'ig-portrait': '4 / 5',
+      'ig-story': '9 / 16',
+      'x-post': '16 / 9',
+      tiktok: '9 / 16',
     };
 
     const handlePaste = (e: React.ClipboardEvent) => {
@@ -95,10 +117,14 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
       document.execCommand('insertText', false, text);
     };
 
+    const boxShadow = showBackground
+      ? '0 30px 60px -20px rgba(0,0,0,0.55), 0 12px 24px -10px rgba(0,0,0,0.4)'
+      : undefined;
+
     return (
       <div
         ref={ref}
-        className="song-image-root overflow-hidden"
+        className="song-image-root overflow-hidden relative"
         style={{
           ...bgStyle,
           color: textColor,
@@ -108,11 +134,46 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
           display: 'flex',
           flexDirection: 'column',
           borderRadius: '1.25rem',
+          boxShadow,
+          isolation: 'isolate',
         }}
       >
+        {/* Custom background image layer */}
+        {backgroundImage && (
+          <>
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: `url(${backgroundImage.dataUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: backgroundImage.opacity,
+                filter: `blur(${backgroundImage.blur}px)`,
+                zIndex: 0,
+                transform: backgroundImage.blur > 0 ? 'scale(1.05)' : undefined,
+              }}
+            />
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: lightText
+                  ? 'linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.45))'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.2))',
+                zIndex: 0,
+              }}
+            />
+          </>
+        )}
+
         {/* Header: cover + song info */}
         <div
           style={{
+            position: 'relative',
+            zIndex: 1,
             display: 'flex',
             alignItems: 'center',
             gap: '0.65rem',
@@ -175,6 +236,8 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
           onPaste={handlePaste}
           onBlur={(e) => onLyricsChange?.(e.currentTarget.innerText ?? '')}
           style={{
+            position: 'relative',
+            zIndex: 1,
             fontSize: `${fontSize}px`,
             fontWeight: 700,
             lineHeight: 1.4,
@@ -194,6 +257,8 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
         {showSpotifyTag && (
           <div
             style={{
+              position: 'relative',
+              zIndex: 1,
               padding: '0 1rem 0.75rem',
               height: '1.6rem',
               filter: lightText
@@ -207,6 +272,28 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
               crossOrigin="anonymous"
               style={{ height: '100%' }}
             />
+          </div>
+        )}
+
+        {/* Watermark */}
+        {showWatermark && (
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 1,
+              padding: '0 1rem 0.65rem',
+              fontSize: '0.6rem',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              color: lightText
+                ? 'rgba(255,255,255,0.35)'
+                : 'rgba(0,0,0,0.35)',
+              textAlign: 'right',
+              marginTop: showSpotifyTag ? 0 : 'auto',
+            }}
+          >
+            made with lyricpost
           </div>
         )}
       </div>

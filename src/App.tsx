@@ -7,25 +7,31 @@ import SearchScreen from '@/components/screens/SearchScreen';
 import SongResultsScreen from '@/components/screens/SongResultsScreen';
 import LyricsScreen from '@/components/screens/LyricsScreen';
 import ImageScreen from '@/components/screens/ImageScreen';
+import Toaster from '@/components/ui/Toaster';
+import HistoryDrawer from '@/components/screens/HistoryDrawer';
 
 function App() {
-  const { currentStep, setStep } = useAppStore();
+  const currentStep = useAppStore((s) => s.currentStep);
+  const setStep = useAppStore((s) => s.setStep);
+  const isHistoryOpen = useAppStore((s) => s.isHistoryOpen);
+  const closeHistoryDrawer = useAppStore((s) => s.closeHistoryDrawer);
 
-  // Always dark mode
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  // Keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (currentStep > 1) {
-          setStep((currentStep - 1) as 1 | 2 | 3 | 4);
-        }
+      if (e.key !== 'Escape') return;
+      if (isHistoryOpen) {
+        closeHistoryDrawer();
+        return;
+      }
+      if (currentStep > 1) {
+        setStep((currentStep - 1) as 1 | 2 | 3 | 4);
       }
     },
-    [currentStep, setStep]
+    [currentStep, setStep, isHistoryOpen, closeHistoryDrawer]
   );
 
   useEffect(() => {
@@ -45,6 +51,8 @@ function App() {
         </AnimatePresence>
       </main>
       <Footer />
+      <HistoryDrawer />
+      <Toaster />
     </div>
   );
 }
