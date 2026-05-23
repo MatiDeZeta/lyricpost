@@ -1,11 +1,10 @@
 import { forwardRef } from 'react';
+import { FALLBACK_COVER } from '@/constants/covers';
+import { getDisplayCoverUrl } from '@/services/coverArt';
 import { useAppStore } from '@/store/useAppStore';
 
 const SPOTIFY_LOGO =
   'https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg';
-
-const FALLBACK_COVER =
-  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png';
 
 const FONT_MAP: Record<string, string> = {
   Poppins: "'Poppins', sans-serif",
@@ -111,11 +110,17 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
       tiktok: '9 / 16',
     };
 
-    const handlePaste = (e: React.ClipboardEvent) => {
+    const handlePaste = (e: React.ClipboardEvent<HTMLElement>) => {
       e.preventDefault();
       const text = e.clipboardData.getData('text/plain');
-      document.execCommand('insertText', false, text);
+      const sel = window.getSelection();
+      if (!sel?.rangeCount) return;
+      sel.deleteFromDocument();
+      sel.getRangeAt(0).insertNode(document.createTextNode(text));
+      sel.collapseToEnd();
     };
+
+    const coverSrc = getDisplayCoverUrl(song) ?? FALLBACK_COVER;
 
     const boxShadow = showBackground
       ? '0 30px 60px -20px rgba(0,0,0,0.55), 0 12px 24px -10px rgba(0,0,0,0.4)'
@@ -181,7 +186,8 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
           }}
         >
           <img
-            src={song.albumCoverUrl || FALLBACK_COVER}
+            className="song-export-cover"
+            src={coverSrc}
             alt="Album cover"
             crossOrigin="anonymous"
             style={{

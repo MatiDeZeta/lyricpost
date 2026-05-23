@@ -16,10 +16,8 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useLyrics } from '@/hooks/useLyrics';
 import Skeleton from '@/components/ui/Skeleton';
+import CoverArt from '@/components/ui/CoverArt';
 import KaraokePreview from '@/components/karaoke/KaraokePreview';
-
-const FALLBACK_COVER =
-  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png';
 
 export default function LyricsScreen() {
   const songs = useAppStore((s) => s.songs);
@@ -111,12 +109,13 @@ export default function LyricsScreen() {
           >
             <ArrowLeft size={16} className="text-neutral-500" />
           </button>
-          {song && (
+          {song && selectedSongIndex !== null && (
             <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src={song.albumCoverUrl || FALLBACK_COVER}
-                alt="Cover"
-                className="w-8 h-8 rounded-md object-cover shrink-0"
+              <CoverArt
+                song={song}
+                songIndex={selectedSongIndex}
+                size="sm"
+                showUpload
               />
               <div className="min-w-0">
                 <div className="text-[12px] font-semibold text-white truncate leading-tight">

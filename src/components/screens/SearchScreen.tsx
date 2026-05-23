@@ -173,7 +173,7 @@ export default function SearchScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2, delay: 0.05 }}
-            className="mt-4"
+            className="mt-5 pt-4 border-t border-white/[0.04]"
           >
             <div className="flex items-center justify-between mb-2 px-0.5">
               <span className="text-[10px] uppercase tracking-wider text-neutral-700 font-semibold">
@@ -217,7 +217,7 @@ export default function SearchScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.25, delay: 0.1 }}
-            className="mt-6"
+            className="mt-5 pt-4 border-t border-white/[0.04]"
           >
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
               <Sparkles size={10} className="text-neutral-700" />

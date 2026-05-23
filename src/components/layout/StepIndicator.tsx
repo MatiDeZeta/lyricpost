@@ -9,25 +9,43 @@ const steps: { step: WizardStep; label: string }[] = [
 
 export default function StepIndicator() {
   const currentStep = useAppStore((s) => s.currentStep);
+  const setStep = useAppStore((s) => s.setStep);
+
+  const goTo = (target: WizardStep) => {
+    if (target >= currentStep) return;
+    if (target === 2 && currentStep >= 3) {
+      const ok = window.confirm('Go back to song results? Your lyric selection stays saved.');
+      if (!ok) return;
+    }
+    if (target === 3 && currentStep === 4) {
+      const ok = window.confirm('Go back to lyrics? Image settings are kept.');
+      if (!ok) return;
+    }
+    setStep(target);
+  };
 
   return (
     <div className="flex items-center gap-1">
       {steps.map(({ step, label }, i) => {
         const isActive = step === currentStep;
         const isCompleted = step < currentStep;
+        const canClick = isCompleted;
 
         return (
           <div key={step} className="flex items-center gap-1">
-            <span
+            <button
+              type="button"
+              disabled={!canClick}
+              onClick={() => canClick && goTo(step)}
               className={`
                 text-[11px] font-medium transition-colors duration-200
                 ${isActive ? 'text-white' : ''}
-                ${isCompleted ? 'text-neutral-500' : ''}
-                ${!isActive && !isCompleted ? 'text-neutral-700' : ''}
+                ${isCompleted ? 'text-neutral-500 hover:text-neutral-300 cursor-pointer' : ''}
+                ${!isActive && !isCompleted ? 'text-neutral-700 cursor-default' : ''}
               `}
             >
               {label}
-            </span>
+            </button>
             {i < steps.length - 1 && (
               <span className="text-neutral-700 text-[10px]">/</span>
             )}

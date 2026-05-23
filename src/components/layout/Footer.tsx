@@ -1,7 +1,13 @@
 export default function Footer() {
   return (
-    <footer className="py-6 px-5">
-      <div className="max-w-2xl mx-auto flex flex-col gap-2 text-[11px] text-neutral-700">
+    <footer className="py-6 px-5 border-t border-white/[0.03]">
+      <div className="max-w-2xl mx-auto flex flex-col gap-2.5 text-[11px] text-neutral-700">
+        <p className="text-center text-neutral-800">
+          <kbd className="px-1 py-px rounded bg-white/[0.06] text-neutral-500 font-mono text-[10px]">Esc</kbd>
+          {' '}back ·{' '}
+          <kbd className="px-1 py-px rounded bg-white/[0.06] text-neutral-500 font-mono text-[10px]">↑↓←→</kbd>
+          {' '}navigate results
+        </p>
         <div className="flex items-center justify-between">
           <span>
             Redesigned by{' '}

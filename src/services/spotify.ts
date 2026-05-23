@@ -3,15 +3,9 @@ import type { Song } from '@/types';
 
 /**
  * Parses a Spotify URL and extracts the track ID.
- * Supports formats:
- * - https://open.spotify.com/track/TRACK_ID
- * - https://open.spotify.com/track/TRACK_ID?si=...
- * - spotify:track:TRACK_ID
  */
 export function parseSpotifyUrl(url: string): string | null {
-  const webMatch = url.match(
-    /open\.spotify\.com\/track\/([a-zA-Z0-9]+)/
-  );
+  const webMatch = url.match(/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/);
   if (webMatch) return webMatch[1];
 
   const uriMatch = url.match(/spotify:track:([a-zA-Z0-9]+)/);
@@ -25,11 +19,17 @@ interface SpotifyOEmbedResponse {
   thumbnail_url: string;
 }
 
+export interface SpotifyLoadResult {
+  song: Song;
+  thumbnailUrl: string | null;
+}
+
 /**
- * Uses Spotify's oEmbed endpoint to get track name + artist,
- * then searches Last.fm to get full track info.
+ * Uses Spotify oEmbed for title + thumbnail, then Last.fm for metadata.
  */
-export async function loadFromSpotifyUrl(url: string): Promise<Song | null> {
+export async function loadFromSpotifyUrl(
+  url: string
+): Promise<SpotifyLoadResult | null> {
   const trackId = parseSpotifyUrl(url);
   if (!trackId) return null;
 
@@ -39,11 +39,12 @@ export async function loadFromSpotifyUrl(url: string): Promise<Song | null> {
   if (!response.ok) return null;
 
   const data: SpotifyOEmbedResponse = await response.json();
-
-  // oEmbed title format is usually "Song Name - Artist Name" or just "Song Name"
   const title = data.title || '';
+  const thumbnailUrl = data.thumbnail_url || null;
 
-  // Search Last.fm with the full title string
   const songs = await searchSongs(title, 1);
-  return songs[0] ?? null;
+  const song = songs[0];
+  if (!song) return null;
+
+  return { song, thumbnailUrl };
 }

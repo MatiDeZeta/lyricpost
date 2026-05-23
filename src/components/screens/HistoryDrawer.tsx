@@ -40,6 +40,9 @@ export default function HistoryDrawer() {
         .map((a) => ({ name: a.trim() }))
         .filter((a) => a.name.length > 0),
       albumCoverUrl: entry.albumCoverUrl,
+      customCoverUrl: null,
+      coverResolvedUrl: entry.albumCoverUrl,
+      coverLoading: false,
       hasSyncedLyrics: false,
       lyrics: lines.map((text) => ({ time: null, text })),
     };
@@ -56,6 +59,9 @@ export default function HistoryDrawer() {
     setStep(4);
     closeHistoryDrawer();
     pushToast('success', 'Restored from history');
+    if (!entry.albumCoverUrl) {
+      void useAppStore.getState().resolveSongCovers([0]);
+    }
   };
 
   const downloadThumb = (entry: HistoryEntry) => {

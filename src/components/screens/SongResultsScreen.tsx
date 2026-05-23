@@ -3,9 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import Skeleton from '@/components/ui/Skeleton';
-
-const FALLBACK_COVER =
-  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png';
+import CoverArt from '@/components/ui/CoverArt';
 
 export default function SongResultsScreen() {
   const songs = useAppStore((s) => s.songs);
@@ -114,12 +112,13 @@ export default function SongResultsScreen() {
               onClick={() => handleSelectSong(index)}
               className="group text-left rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.04] hover:border-white/[0.1] hover:bg-white/[0.05] focus:outline-none focus:ring-1 focus:ring-white/30 active:scale-[0.97] transition-all duration-200 cursor-pointer"
             >
-              <div className="aspect-square overflow-hidden bg-white/[0.03]">
-                <img
-                  src={song.albumCoverUrl || FALLBACK_COVER}
-                  alt={`${song.name} cover`}
-                  className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
-                  loading="lazy"
+              <div className="aspect-square overflow-hidden bg-white/[0.03] group-hover:scale-[1.02] transition-transform duration-500">
+                <CoverArt
+                  song={song}
+                  songIndex={index}
+                  size="md"
+                  showUpload={false}
+                  className="rounded-none"
                 />
               </div>
               <div className="p-2.5">

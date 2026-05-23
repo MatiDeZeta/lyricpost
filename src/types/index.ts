@@ -12,6 +12,12 @@ export interface Song {
   durationMs: number;
   artists: Artist[];
   albumCoverUrl: string | null;
+  /** User-uploaded cover (session only) */
+  customCoverUrl: string | null;
+  /** Cached result of auto fallback chain */
+  coverResolvedUrl: string | null;
+  /** True while iTunes / fallback fetch is running */
+  coverLoading?: boolean;
   hasSyncedLyrics: boolean;
   lyrics: Lyric[] | null;
 }

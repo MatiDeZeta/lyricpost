@@ -2,7 +2,9 @@ import { useCallback } from 'react';
 import { toPng, toJpeg, toSvg, toBlob } from 'html-to-image';
 import { saveAs } from 'file-saver';
 import { useAppStore } from '@/store/useAppStore';
+import { getDisplayCoverUrl } from '@/services/coverArt';
 import { compressDataUrl } from '@/utils/storage';
+import { inlineExternalImages } from '@/utils/inlineExportImages';
 
 function pickRenderer(format: 'png' | 'jpeg' | 'svg') {
   if (format === 'jpeg') return toJpeg;
@@ -12,6 +14,33 @@ function pickRenderer(format: 'png' | 'jpeg' | 'svg') {
 
 function extensionFor(format: 'png' | 'jpeg' | 'svg') {
   return format === 'jpeg' ? 'jpg' : format;
+}
+
+async function renderNode(node: HTMLElement, format: 'png' | 'jpeg' | 'svg') {
+  const restore = await inlineExternalImages(node);
+  try {
+    const renderer = pickRenderer(format);
+    const { imageSettings } = useAppStore.getState();
+    return await renderer(node, {
+      pixelRatio: window.devicePixelRatio * imageSettings.resolution,
+      cacheBust: true,
+    });
+  } finally {
+    restore();
+  }
+}
+
+async function renderBlob(node: HTMLElement) {
+  const restore = await inlineExternalImages(node);
+  try {
+    const { imageSettings } = useAppStore.getState();
+    return await toBlob(node, {
+      pixelRatio: window.devicePixelRatio * imageSettings.resolution,
+      cacheBust: true,
+    });
+  } finally {
+    restore();
+  }
 }
 
 export function useImageExport() {
@@ -36,19 +65,14 @@ export function useImageExport() {
     setLoading(true, 'Generating image...');
 
     try {
-      const renderer = pickRenderer(imageSettings.format);
-      const dataUrl = await renderer(node, {
-        pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-        cacheBust: true,
-      });
-
+      const dataUrl = await renderNode(node, imageSettings.format);
       const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
 
       addHistoryEntry({
         id: crypto.randomUUID(),
         songName: song.name,
         artistName: song.artists.map((a) => a.name).join(', '),
-        albumCoverUrl: song.albumCoverUrl,
+        albumCoverUrl: getDisplayCoverUrl(song),
         lyrics:
           node.querySelector('.song-image-lyrics')?.textContent ?? '',
         settings: { ...imageSettings },
@@ -70,16 +94,13 @@ export function useImageExport() {
 
   const copyToClipboard = useCallback(async (node: HTMLElement | null) => {
     const state = useAppStore.getState();
-    const { setLoading, imageSettings, pushToast } = state;
+    const { setLoading, pushToast } = state;
     if (!node) return;
 
     setLoading(true, 'Copying to clipboard...');
 
     try {
-      const blob = await toBlob(node, {
-        pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-        cacheBust: true,
-      });
+      const blob = await renderBlob(node);
       if (!blob) throw new Error('No blob produced');
 
       await navigator.clipboard.write([
@@ -104,10 +125,7 @@ export function useImageExport() {
 
     setLoading(true, 'Preparing to share...');
     try {
-      const blob = await toBlob(node, {
-        pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-        cacheBust: true,
-      });
+      const blob = await renderBlob(node);
       if (!blob) throw new Error('No blob');
 
       const ext = extensionFor(imageSettings.format);

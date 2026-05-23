@@ -1,4 +1,5 @@
 import type { Song, Lyric, Artist } from '@/types';
+import { isPlaceholderCover } from '@/services/coverArt';
 
 const API_KEY = import.meta.env.VITE_LASTFM_API_KEY as string;
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
@@ -22,9 +23,12 @@ function getBestImage(images?: LastFmImage[]): string | null {
   const preferred = ['mega', 'extralarge', 'large', 'medium', 'small'];
   for (const size of preferred) {
     const img = images.find((i) => i.size === size);
-    if (img && img['#text']) return img['#text'];
+    const url = img?.['#text'];
+    if (url && url.trim() && !isPlaceholderCover(url)) return url;
   }
-  return images[images.length - 1]?.['#text'] || null;
+  const last = images[images.length - 1]?.['#text'];
+  if (last && last.trim() && !isPlaceholderCover(last)) return last;
+  return null;
 }
 
 function parseLyricLine(line: string): Lyric {
@@ -45,6 +49,9 @@ function trackInfoToSong(track: LastFmTrackInfo): Song {
     durationMs: track.duration ? Number(track.duration) : 0,
     artists: track.artist ? [{ name: track.artist.name }] : [],
     albumCoverUrl: getBestImage(track.album?.image),
+    customCoverUrl: null,
+    coverResolvedUrl: null,
+    coverLoading: false,
     hasSyncedLyrics: false,
     lyrics: null,
   };

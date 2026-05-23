@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { resolveCoverForSong } from '@/services/coverArt';
+import { createSafeStorage, MAX_TOASTS } from '@/utils/persistStorage';
 import type {
   Song,
   ImageSettings,
@@ -114,6 +116,10 @@ interface AppState {
   selectSong: (index: number) => void;
   usedDirectLink: boolean;
   setUsedDirectLink: (v: boolean) => void;
+  spotifyThumbForResolve: string | null;
+  setSpotifyThumbForResolve: (url: string | null) => void;
+  setSongCover: (index: number, dataUrl: string | null) => void;
+  resolveSongCovers: (indices?: number[]) => Promise<void>;
 
   // Recent searches (persisted)
   recentSearches: string[];
@@ -186,9 +192,62 @@ export const useAppStore = create<AppState>()(
       songs: [],
       setSongs: (songs) => set({ songs }),
       selectedSongIndex: null,
-      selectSong: (index) => set({ selectedSongIndex: index }),
+      selectSong: (index) => {
+        set({ selectedSongIndex: index });
+        void get().resolveSongCovers([index]);
+      },
       usedDirectLink: false,
       setUsedDirectLink: (v) => set({ usedDirectLink: v }),
+      spotifyThumbForResolve: null,
+      setSpotifyThumbForResolve: (url) => set({ spotifyThumbForResolve: url }),
+
+      setSongCover: (index, dataUrl) =>
+        set((state) => {
+          const songs = [...state.songs];
+          const song = songs[index];
+          if (!song) return {};
+          songs[index] = {
+            ...song,
+            customCoverUrl: dataUrl,
+            coverResolvedUrl: dataUrl,
+          };
+          return { songs };
+        }),
+
+      resolveSongCovers: async (indices) => {
+        const state = get();
+        const targetIndices =
+          indices ?? state.songs.map((_, i) => i);
+
+        for (const i of targetIndices) {
+          const song = get().songs[i];
+          if (!song || song.customCoverUrl) continue;
+
+          set((s) => {
+            const songs = [...s.songs];
+            if (!songs[i]) return {};
+            songs[i] = { ...songs[i], coverLoading: true };
+            return { songs };
+          });
+
+          const thumb =
+            i === 0 ? get().spotifyThumbForResolve : null;
+          const resolved = await resolveCoverForSong(song, thumb);
+
+          set((s) => {
+            const songs = [...s.songs];
+            if (!songs[i]) return {};
+            songs[i] = {
+              ...songs[i],
+              coverResolvedUrl: resolved,
+              coverLoading: false,
+            };
+            return { songs };
+          });
+        }
+
+        set({ spotifyThumbForResolve: null });
+      },
 
       // Recent searches
       recentSearches: [],
@@ -350,9 +409,10 @@ export const useAppStore = create<AppState>()(
       toasts: [],
       pushToast: (kind, message) => {
         const id = crypto.randomUUID();
-        set((state) => ({
-          toasts: [...state.toasts, { id, kind, message }],
-        }));
+        set((state) => {
+          const next = [...state.toasts, { id, kind, message }];
+          return { toasts: next.slice(-MAX_TOASTS) };
+        });
         setTimeout(() => {
           set((state) => ({
             toasts: state.toasts.filter((t) => t.id !== id),
@@ -375,7 +435,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'lyricpost-store',
       version: 2,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSafeStorage()),
       // Only persist user-facing prefs/history/templates, not transient state
       partialize: (state) => ({
         imageSettings: state.imageSettings,

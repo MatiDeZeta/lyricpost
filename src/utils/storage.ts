@@ -41,3 +41,29 @@ export function readFileAsDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+/** Compress an uploaded cover for in-memory session use */
+export async function compressCoverForDisplay(
+  dataUrl: string,
+  maxPx = 512,
+  quality = 0.85
+): Promise<string> {
+  return compressDataUrl(dataUrl, maxPx, quality);
+}
+
+/** Fetch remote image URL and return a data URL for canvas/export (CORS permitting) */
+export async function urlToDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
