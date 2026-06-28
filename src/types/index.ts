@@ -48,6 +48,13 @@ export interface BackgroundImage {
 export type ExportFormat = 'png' | 'jpeg' | 'svg';
 export type ExportResolution = 1 | 2 | 4;
 
+/** What to include when saving the lyric card */
+export type ExportMode =
+  | 'full'
+  | 'transparent'
+  | 'content'
+  | 'cover';
+
 export interface ImageSettings {
   backgroundColor: string;
   gradient: GradientColor | null;

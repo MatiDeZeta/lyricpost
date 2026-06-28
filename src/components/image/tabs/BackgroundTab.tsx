@@ -1,5 +1,6 @@
-import { Palette, Shuffle, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Palette, Shuffle, Sparkles, Image as ImageIcon, Download } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { useImageExport } from '@/hooks/useImageExport';
 import CoverArt from '@/components/ui/CoverArt';
 import { ControlSection } from '../shared/ControlSection';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
@@ -24,6 +25,8 @@ export default function BackgroundTab({
   const updateImageSettings = useAppStore((s) => s.updateImageSettings);
   const presetColors = useAppStore((s) => s.presetColors);
   const shuffleColor = useAppStore((s) => s.shuffleColor);
+  const isLoading = useAppStore((s) => s.isLoading);
+  const { downloadImage } = useImageExport();
 
   return (
     <div className="space-y-2">
@@ -31,10 +34,21 @@ export default function BackgroundTab({
         <ControlSection icon={ImageIcon} label="Album cover">
           <div className="flex items-center gap-3">
             <CoverArt song={song} songIndex={selectedSongIndex} size="lg" showUpload />
-            <p className="text-[11px] text-neutral-600 leading-relaxed flex-1">
-              Many Last.fm tracks have no artwork. Upload a cover or we will try Spotify
-              and iTunes automatically.
-            </p>
+            <div className="flex-1 space-y-2">
+              <p className="text-[11px] text-neutral-600 leading-relaxed">
+                Many Last.fm tracks have no artwork. Upload a cover or we will try Spotify
+                and iTunes automatically.
+              </p>
+              <button
+                type="button"
+                onClick={() => void downloadImage(null, 'cover')}
+                disabled={isLoading}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium bg-white/[0.04] text-neutral-400 hover:bg-white/[0.08] hover:text-neutral-200 transition-colors disabled:opacity-30"
+              >
+                <Download size={11} />
+                Download cover only
+              </button>
+            </div>
           </div>
         </ControlSection>
       )}

@@ -148,6 +148,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
           <>
             <div
               aria-hidden
+              data-export-bg
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -162,6 +163,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
             />
             <div
               aria-hidden
+              data-export-bg
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -262,6 +264,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
         {/* Spotify tag */}
         {showSpotifyTag && (
           <div
+            data-export-optional
             style={{
               position: 'relative',
               zIndex: 1,
@@ -284,6 +287,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
         {/* Watermark */}
         {showWatermark && (
           <div
+            data-export-optional
             style={{
               position: 'relative',
               zIndex: 1,

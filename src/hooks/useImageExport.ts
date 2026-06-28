@@ -3,8 +3,14 @@ import { toPng, toJpeg, toSvg, toBlob } from 'html-to-image';
 import { saveAs } from 'file-saver';
 import { useAppStore } from '@/store/useAppStore';
 import { getDisplayCoverUrl } from '@/services/coverArt';
-import { compressDataUrl } from '@/utils/storage';
+import { compressDataUrl, urlToDataUrl } from '@/utils/storage';
 import { inlineExternalImages } from '@/utils/inlineExportImages';
+import {
+  prepareExportNode,
+  exportFormatForMode,
+  upscaleCoverUrl,
+} from '@/utils/exportPrepare';
+import type { ExportMode } from '@/types';
 
 function pickRenderer(format: 'png' | 'jpeg' | 'svg') {
   if (format === 'jpeg') return toJpeg;
@@ -16,8 +22,17 @@ function extensionFor(format: 'png' | 'jpeg' | 'svg') {
   return format === 'jpeg' ? 'jpg' : format;
 }
 
-async function renderNode(node: HTMLElement, format: 'png' | 'jpeg' | 'svg') {
-  const restore = await inlineExternalImages(node);
+function songFileBase(song: { name: string; artists: { name: string }[] }) {
+  return `${song.artists.map((a) => a.name).join(', ')} - ${song.name}`;
+}
+
+async function renderNode(
+  node: HTMLElement,
+  format: 'png' | 'jpeg' | 'svg',
+  mode: ExportMode
+) {
+  const restoreInline = await inlineExternalImages(node);
+  const restoreMode = prepareExportNode(node, mode);
   try {
     const renderer = pickRenderer(format);
     const { imageSettings } = useAppStore.getState();
@@ -26,137 +41,198 @@ async function renderNode(node: HTMLElement, format: 'png' | 'jpeg' | 'svg') {
       cacheBust: true,
     });
   } finally {
-    restore();
+    restoreMode();
+    restoreInline();
   }
 }
 
-async function renderBlob(node: HTMLElement) {
-  const restore = await inlineExternalImages(node);
+async function renderBlob(node: HTMLElement, mode: ExportMode) {
+  const restoreInline = await inlineExternalImages(node);
+  const restoreMode = prepareExportNode(node, mode);
   try {
     const { imageSettings } = useAppStore.getState();
+    const format = exportFormatForMode(mode, imageSettings.format);
+    if (format === 'jpeg') {
+      return await toJpeg(node, {
+        pixelRatio: window.devicePixelRatio * imageSettings.resolution,
+        cacheBust: true,
+      }).then((url) => fetch(url).then((r) => r.blob()));
+    }
     return await toBlob(node, {
       pixelRatio: window.devicePixelRatio * imageSettings.resolution,
       cacheBust: true,
     });
   } finally {
-    restore();
+    restoreMode();
+    restoreInline();
   }
 }
 
 export function useImageExport() {
-  const downloadImage = useCallback(async (node: HTMLElement | null) => {
-    const state = useAppStore.getState();
-    const {
-      songs,
-      selectedSongIndex,
-      setLoading,
-      addHistoryEntry,
-      imageSettings,
-      pushToast,
-    } = state;
+  const downloadImage = useCallback(
+    async (node: HTMLElement | null, mode: ExportMode = 'full') => {
+      const state = useAppStore.getState();
+      const {
+        songs,
+        selectedSongIndex,
+        setLoading,
+        addHistoryEntry,
+        imageSettings,
+        pushToast,
+      } = state;
 
-    if (!node || selectedSongIndex === null) return;
-    const song = songs[selectedSongIndex];
-    if (!song) return;
+      if (selectedSongIndex === null) return;
+      const song = songs[selectedSongIndex];
+      if (!song) return;
 
-    const ext = extensionFor(imageSettings.format);
-    const fileName = `${song.artists.map((a) => a.name).join(', ')} - ${song.name}.${ext}`;
+      const base = songFileBase(song);
 
-    setLoading(true, 'Generating image...');
-
-    try {
-      const dataUrl = await renderNode(node, imageSettings.format);
-      const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
-
-      addHistoryEntry({
-        id: crypto.randomUUID(),
-        songName: song.name,
-        artistName: song.artists.map((a) => a.name).join(', '),
-        albumCoverUrl: getDisplayCoverUrl(song),
-        lyrics:
-          node.querySelector('.song-image-lyrics')?.textContent ?? '',
-        settings: { ...imageSettings },
-        thumbnailDataUrl,
-        createdAt: Date.now(),
-      });
-
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      saveAs(blob, fileName);
-      pushToast('success', 'Image saved');
-    } catch (err) {
-      console.error('Failed to generate image:', err);
-      pushToast('error', 'Failed to generate image');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const copyToClipboard = useCallback(async (node: HTMLElement | null) => {
-    const state = useAppStore.getState();
-    const { setLoading, pushToast } = state;
-    if (!node) return;
-
-    setLoading(true, 'Copying to clipboard...');
-
-    try {
-      const blob = await renderBlob(node);
-      if (!blob) throw new Error('No blob produced');
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ]);
-      pushToast('success', 'Copied to clipboard');
-    } catch (err) {
-      console.error('Failed to copy image:', err);
-      pushToast('error', "Couldn't copy image");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const shareImage = useCallback(async (node: HTMLElement | null) => {
-    const state = useAppStore.getState();
-    const { songs, selectedSongIndex, setLoading, imageSettings, pushToast } =
-      state;
-    if (!node || selectedSongIndex === null) return;
-    const song = songs[selectedSongIndex];
-    if (!song) return;
-
-    setLoading(true, 'Preparing to share...');
-    try {
-      const blob = await renderBlob(node);
-      if (!blob) throw new Error('No blob');
-
-      const ext = extensionFor(imageSettings.format);
-      const file = new File(
-        [blob],
-        `${song.name}.${ext}`,
-        { type: blob.type || 'image/png' }
-      );
-
-      if (
-        typeof navigator.canShare === 'function' &&
-        navigator.canShare({ files: [file] })
-      ) {
-        await navigator.share({
-          files: [file],
-          title: `${song.name} — ${song.artists.map((a) => a.name).join(', ')}`,
-          text: 'Made with lyricpost',
-        });
-      } else {
-        saveAs(blob, file.name);
-        pushToast('info', 'Sharing not supported, downloaded instead');
+      if (mode === 'cover') {
+        setLoading(true, 'Saving cover art...');
+        try {
+          const coverUrl = getDisplayCoverUrl(song);
+          if (!coverUrl) {
+            pushToast('error', 'No cover art available');
+            return;
+          }
+          const hiRes = upscaleCoverUrl(coverUrl);
+          const dataUrl =
+            hiRes.startsWith('data:') ? hiRes : await urlToDataUrl(hiRes);
+          if (!dataUrl) {
+            pushToast('error', 'Could not fetch cover art');
+            return;
+          }
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          saveAs(blob, `${base} - cover.jpg`);
+          pushToast('success', 'Cover art saved');
+        } catch (err) {
+          console.error('Failed to save cover:', err);
+          pushToast('error', 'Failed to save cover art');
+        } finally {
+          setLoading(false);
+        }
+        return;
       }
-    } catch (err) {
-      if ((err as Error)?.name !== 'AbortError') {
-        console.error('Share failed:', err);
-        pushToast('error', "Couldn't share image");
+
+      if (!node) return;
+
+      const format = exportFormatForMode(mode, imageSettings.format);
+      const ext = extensionFor(format);
+      const suffix =
+        mode === 'transparent'
+          ? ' (transparent)'
+          : mode === 'content'
+            ? ' (content)'
+            : '';
+      const fileName = `${base}${suffix}.${ext}`;
+
+      setLoading(true, 'Generating image...');
+
+      try {
+        const dataUrl = await renderNode(node, format, mode);
+
+        if (mode === 'full') {
+          const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
+          addHistoryEntry({
+            id: crypto.randomUUID(),
+            songName: song.name,
+            artistName: song.artists.map((a) => a.name).join(', '),
+            albumCoverUrl: getDisplayCoverUrl(song),
+            lyrics:
+              node.querySelector('.song-image-lyrics')?.textContent ?? '',
+            settings: { ...imageSettings },
+            thumbnailDataUrl,
+            createdAt: Date.now(),
+          });
+        }
+
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        saveAs(blob, fileName);
+        pushToast('success', 'Image saved');
+      } catch (err) {
+        console.error('Failed to generate image:', err);
+        pushToast('error', 'Failed to generate image');
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
+
+  const copyToClipboard = useCallback(
+    async (node: HTMLElement | null, mode: ExportMode = 'full') => {
+      const state = useAppStore.getState();
+      const { setLoading, pushToast } = state;
+      if (!node) return;
+
+      setLoading(true, 'Copying to clipboard...');
+
+      try {
+        const blob = await renderBlob(node, mode);
+        if (!blob) throw new Error('No blob produced');
+
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob }),
+        ]);
+        pushToast('success', 'Copied to clipboard');
+      } catch (err) {
+        console.error('Failed to copy image:', err);
+        pushToast('error', "Couldn't copy image");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const shareImage = useCallback(
+    async (node: HTMLElement | null, mode: ExportMode = 'full') => {
+      const state = useAppStore.getState();
+      const { songs, selectedSongIndex, setLoading, imageSettings, pushToast } =
+        state;
+      if (!node || selectedSongIndex === null) return;
+      const song = songs[selectedSongIndex];
+      if (!song) return;
+
+      setLoading(true, 'Preparing to share...');
+      try {
+        const blob = await renderBlob(node, mode);
+        if (!blob) throw new Error('No blob');
+
+        const format = exportFormatForMode(mode, imageSettings.format);
+        const ext = extensionFor(format);
+        const file = new File(
+          [blob],
+          `${song.name}.${ext}`,
+          { type: blob.type || 'image/png' }
+        );
+
+        if (
+          typeof navigator.canShare === 'function' &&
+          navigator.canShare({ files: [file] })
+        ) {
+          await navigator.share({
+            files: [file],
+            title: `${song.name} — ${song.artists.map((a) => a.name).join(', ')}`,
+            text: 'Made with lyricpost',
+          });
+        } else {
+          saveAs(blob, file.name);
+          pushToast('info', 'Sharing not supported, downloaded instead');
+        }
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError') {
+          console.error('Share failed:', err);
+          pushToast('error', "Couldn't share image");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   return { downloadImage, copyToClipboard, shareImage };
 }

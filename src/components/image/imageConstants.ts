@@ -1,5 +1,5 @@
 import { Square, Smartphone, Monitor } from '@/constants/icons';
-import type { AspectRatio, ExportFormat, ExportResolution } from '@/types';
+import type { AspectRatio, ExportFormat, ExportMode, ExportResolution } from '@/types';
 
 export const RATIO_GROUPS: {
   label: string;
@@ -51,4 +51,31 @@ export const RESOLUTIONS: { value: ExportResolution; label: string }[] = [
   { value: 1, label: '1x' },
   { value: 2, label: '2x' },
   { value: 4, label: '4x' },
+];
+
+export const EXPORT_MODES: {
+  value: ExportMode;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: 'full',
+    label: 'Full image',
+    description: 'Background, lyrics, cover, and tags',
+  },
+  {
+    value: 'transparent',
+    label: 'No background',
+    description: 'Lyrics and cover on a transparent PNG',
+  },
+  {
+    value: 'content',
+    label: 'Content only',
+    description: 'No background, Spotify tag, or watermark',
+  },
+  {
+    value: 'cover',
+    label: 'Album cover',
+    description: 'Download only the cover art file',
+  },
 ];
