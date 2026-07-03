@@ -1,6 +1,5 @@
 import type { Song } from '@/types';
 import type { LinkLoadResult } from './types';
-import { upscaleArtwork } from './parseTitle';
 
 interface DeezerTrack {
   id: number;
