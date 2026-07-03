@@ -5,7 +5,7 @@ import {
   checkRateLimit,
   setCors,
   queryParam,
-} from './_lib';
+} from './_lib.js';
 
 const ALLOWED_HOSTS = [
   'tidal.com',

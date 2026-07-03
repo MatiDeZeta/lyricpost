@@ -5,7 +5,7 @@ import {
   checkRateLimit,
   setCors,
   queryParam,
-} from './_lib';
+} from './_lib.js';
 
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
 const ALLOWED_METHODS = new Set([
