@@ -333,10 +333,10 @@ export default function BackgroundTab({
             onChange={(v) => updateImageSettings({ lightText: v })}
           />
         </ControlSection>
-        <ControlSection label="Spotify" compact>
+        <ControlSection label="Platform tag" compact>
           <ToggleSwitch
-            checked={imageSettings.showSpotifyTag}
-            onChange={(v) => updateImageSettings({ showSpotifyTag: v })}
+            checked={imageSettings.showPlatformTag}
+            onChange={(v) => updateImageSettings({ showPlatformTag: v })}
           />
         </ControlSection>
         <ControlSection label="Shadow" compact>

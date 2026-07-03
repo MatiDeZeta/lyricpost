@@ -8,6 +8,15 @@ export default function Footer() {
           <kbd className="px-1 py-px rounded bg-white/[0.06] text-neutral-500 font-mono text-[10px]">↑↓←→</kbd>
           {' '}navigate results
         </p>
+        <div className="flex items-center justify-center gap-3 text-neutral-700">
+          <a href="/privacy.html" className="hover:text-neutral-400 transition-colors">
+            Privacy
+          </a>
+          <span aria-hidden>·</span>
+          <a href="/terms.html" className="hover:text-neutral-400 transition-colors">
+            Terms
+          </a>
+        </div>
         <div className="flex items-center justify-between">
           <span>
             Redesigned by{' '}

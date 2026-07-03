@@ -1,8 +1,6 @@
 import type { Song, Lyric, Artist } from '@/types';
 import { isPlaceholderCover } from '@/services/coverArt';
-
-const API_KEY = import.meta.env.VITE_LASTFM_API_KEY as string;
-const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
+import { lastfmApi } from '@/services/apiClient';
 
 interface LastFmImage {
   '#text': string;
@@ -58,17 +56,23 @@ function trackInfoToSong(track: LastFmTrackInfo): Song {
 }
 
 export async function searchSongs(query: string, limit = 6): Promise<Song[]> {
-  const searchUrl = `${BASE_URL}?method=track.search&track=${encodeURIComponent(query)}&api_key=${API_KEY}&format=json&limit=${limit}`;
-  const response = await fetch(searchUrl);
-  const result = await response.json();
+  const result = (await lastfmApi({
+    method: 'track.search',
+    track: query,
+    limit: String(limit),
+  })) as {
+    results?: { trackmatches?: { track?: Array<{ name: string; artist: string }> } };
+  };
   const tracks = result?.results?.trackmatches?.track || [];
 
   const songs = await Promise.all(
-    tracks.map(async (searchTrack: { name: string; artist: string }) => {
+    tracks.map(async (searchTrack) => {
       try {
-        const infoUrl = `${BASE_URL}?method=track.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(searchTrack.artist)}&track=${encodeURIComponent(searchTrack.name)}&format=json`;
-        const infoResponse = await fetch(infoUrl);
-        const infoResult = await infoResponse.json();
+        const infoResult = (await lastfmApi({
+          method: 'track.getInfo',
+          artist: searchTrack.artist,
+          track: searchTrack.name,
+        })) as { track?: LastFmTrackInfo };
         if (infoResult.track) {
           return trackInfoToSong(infoResult.track);
         }
@@ -83,11 +87,15 @@ export async function searchSongs(query: string, limit = 6): Promise<Song[]> {
 }
 
 export async function getTrackByMbid(mbid: string): Promise<Song | null> {
-  const url = `${BASE_URL}?method=track.getInfo&api_key=${API_KEY}&mbid=${mbid}&format=json`;
-  const response = await fetch(url);
-  if (!response.ok) return null;
-  const result = await response.json();
-  if (result.track) return trackInfoToSong(result.track);
+  try {
+    const result = (await lastfmApi({
+      method: 'track.getInfo',
+      mbid,
+    })) as { track?: LastFmTrackInfo };
+    if (result.track) return trackInfoToSong(result.track);
+  } catch {
+    return null;
+  }
   return null;
 }
 
@@ -95,11 +103,16 @@ export async function searchTrackByNameArtist(
   name: string,
   artist: string
 ): Promise<Song | null> {
-  const url = `${BASE_URL}?method=track.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(name)}&format=json`;
-  const response = await fetch(url);
-  if (!response.ok) return null;
-  const result = await response.json();
-  if (result.track) return trackInfoToSong(result.track);
+  try {
+    const result = (await lastfmApi({
+      method: 'track.getInfo',
+      artist,
+      track: name,
+    })) as { track?: LastFmTrackInfo };
+    if (result.track) return trackInfoToSong(result.track);
+  } catch {
+    return null;
+  }
   return null;
 }
 

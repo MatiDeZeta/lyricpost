@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Download, Copy, Share2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, Copy, Share2, ChevronDown, Link } from 'lucide-react';
 import { useImageExport } from '@/hooks/useImageExport';
 import { useAppStore } from '@/store/useAppStore';
+import { buildShareUrl } from '@/utils/shareUrl';
 import { EXPORT_MODES } from './imageConstants';
 import type { ExportMode } from '@/types';
 
@@ -15,6 +16,9 @@ export default function ImageExportBar({
   shareAvailable: boolean;
 }) {
   const isLoading = useAppStore((s) => s.isLoading);
+  const songs = useAppStore((s) => s.songs);
+  const selectedSongIndex = useAppStore((s) => s.selectedSongIndex);
+  const pushToast = useAppStore((s) => s.pushToast);
   const { downloadImage, copyToClipboard, shareImage } = useImageExport();
   const [exportMode, setExportMode] = useState<ExportMode>('full');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,7 +47,19 @@ export default function ImageExportBar({
   const copyLabel =
     exportMode === 'cover'
       ? 'Cover art cannot be copied — use Save'
-      : 'Copy to clipboard';
+      : 'Copy image to clipboard';
+
+  const copyPageLink = async () => {
+    const song =
+      selectedSongIndex !== null ? songs[selectedSongIndex] : null;
+    const url = buildShareUrl(song);
+    try {
+      await navigator.clipboard.writeText(url);
+      pushToast('success', 'Link copied');
+    } catch {
+      pushToast('error', "Couldn't copy link");
+    }
+  };
 
   return (
     <div className="flex items-center justify-between py-5">
@@ -60,6 +76,15 @@ export default function ImageExportBar({
         </span>
       </div>
       <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => void copyPageLink()}
+          disabled={isLoading}
+          className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors disabled:opacity-30"
+          aria-label="Copy share link"
+          title="Copy share link"
+        >
+          <Link size={14} className="text-neutral-500" />
+        </button>
         <button
           onClick={() => copyToClipboard(imageRef.current, exportMode)}
           disabled={isLoading || exportMode === 'cover'}

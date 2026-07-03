@@ -20,7 +20,20 @@ export interface Song {
   coverLoading?: boolean;
   hasSyncedLyrics: boolean;
   lyrics: Lyric[] | null;
+  /** Where this song was loaded from */
+  sourcePlatform?: MusicPlatform;
+  sourceUrl?: string;
+  sourceId?: string;
 }
+
+export type MusicPlatform =
+  | 'spotify'
+  | 'apple'
+  | 'youtube'
+  | 'tidal'
+  | 'deezer'
+  | 'amazon'
+  | 'search';
 
 export type AspectRatio =
   | 'free'
@@ -61,7 +74,8 @@ export interface ImageSettings {
   useGradient: boolean;
   backgroundImage: BackgroundImage | null;
   lightText: boolean;
-  showSpotifyTag: boolean;
+  showPlatformTag: boolean;
+  platformTagOverride?: MusicPlatform;
   showBackground: boolean;
   showWatermark: boolean;
   width: number;

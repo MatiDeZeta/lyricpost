@@ -1,6 +1,7 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+import { useSearch } from '@/hooks/useSearch';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SearchScreen from '@/components/screens/SearchScreen';
@@ -18,10 +19,18 @@ function App() {
   const closeHistoryDrawer = useAppStore((s) => s.closeHistoryDrawer);
 
   const pushToast = useAppStore((s) => s.pushToast);
+  const { initFromShareUrl } = useSearch();
+  const deepLinkHandled = useRef(false);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
+
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    deepLinkHandled.current = true;
+    void initFromShareUrl();
+  }, [initFromShareUrl]);
 
   useEffect(() => {
     const onTrim = () =>

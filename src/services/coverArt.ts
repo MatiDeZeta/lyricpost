@@ -58,7 +58,7 @@ export async function fetchItunesArtwork(
 
 export async function resolveCoverForSong(
   song: Song,
-  spotifyThumb?: string | null
+  linkThumb?: string | null
 ): Promise<string | null> {
   if (song.customCoverUrl) return song.customCoverUrl;
 
@@ -66,8 +66,8 @@ export async function resolveCoverForSong(
     return song.albumCoverUrl;
   }
 
-  if (spotifyThumb && !isPlaceholderCover(spotifyThumb)) {
-    return spotifyThumb;
+  if (linkThumb && !isPlaceholderCover(linkThumb)) {
+    return linkThumb;
   }
 
   const artist = getArtistName(song);

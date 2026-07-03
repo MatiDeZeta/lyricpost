@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Link2, ArrowRight, ExternalLink, X, Sparkles } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useSearch } from '@/hooks/useSearch';
+import { detectPlatform, PLATFORM_LABELS } from '@/services/links';
 
 type Tab = 'search' | 'link';
+
+const SUPPORTED_SERVICES =
+  'Spotify · Apple Music · Deezer · YouTube · Tidal · Amazon Music';
 
 const SAMPLE_SUGGESTIONS = [
   'Radiohead Creep',
@@ -18,15 +22,20 @@ const SAMPLE_SUGGESTIONS = [
 export default function SearchScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('search');
   const [query, setQuery] = useState('');
-  const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
   const isLoading = useAppStore((s) => s.isLoading);
   const error = useAppStore((s) => s.error);
   const loadingMessage = useAppStore((s) => s.loadingMessage);
   const recentSearches = useAppStore((s) => s.recentSearches);
   const removeRecentSearch = useAppStore((s) => s.removeRecentSearch);
   const clearRecentSearches = useAppStore((s) => s.clearRecentSearches);
-  const { searchByName, searchBySpotifyLink } = useSearch();
+  const { searchByName, searchByLink } = useSearch();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const detectedPlatform = useMemo(
+    () => (linkUrl.trim() ? detectPlatform(linkUrl) : null),
+    [linkUrl]
+  );
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -37,9 +46,9 @@ export default function SearchScreen() {
     if (query.trim()) searchByName(query);
   };
 
-  const handleSpotifyLoad = (e: React.FormEvent) => {
+  const handleLinkLoad = (e: React.FormEvent) => {
     e.preventDefault();
-    if (spotifyUrl.trim()) searchBySpotifyLink(spotifyUrl);
+    if (linkUrl.trim()) searchByLink(linkUrl);
   };
 
   const runChip = (q: string) => {
@@ -138,24 +147,35 @@ export default function SearchScreen() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.15 }}
-              onSubmit={handleSpotifyLoad}
+              onSubmit={handleLinkLoad}
               className="flex flex-col gap-3"
             >
               <div className="relative group">
                 <Link2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-neutral-400 transition-colors" />
                 <input
                   ref={inputRef}
-                  type="text"
-                  value={spotifyUrl}
-                  onChange={(e) => setSpotifyUrl(e.target.value)}
-                  placeholder="https://open.spotify.com/track/..."
+                  type="url"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="Paste a track link from any service..."
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-white placeholder-neutral-600 text-[13px] outline-none focus:border-white/15 focus:bg-white/[0.07] transition-all disabled:opacity-40"
                 />
               </div>
+              {detectedPlatform && (
+                <p className="text-[11px] text-neutral-500 px-1">
+                  Detected:{' '}
+                  <span className="text-neutral-300 font-medium">
+                    {PLATFORM_LABELS[detectedPlatform]}
+                  </span>
+                </p>
+              )}
+              <p className="text-[10px] text-neutral-700 leading-relaxed px-1">
+                {SUPPORTED_SERVICES}
+              </p>
               <button
                 type="submit"
-                disabled={isLoading || !spotifyUrl.trim()}
+                disabled={isLoading || !linkUrl.trim()}
                 className="w-full py-3 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-neutral-100 active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (

@@ -1,7 +1,7 @@
 {
   "name": "LyricPost",
   "short_name": "LyricPost",
-  "description": "Turn lyrics into shareable images",
+  "description": "Turn lyrics into shareable images from Spotify, Apple Music, Deezer, and more",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",

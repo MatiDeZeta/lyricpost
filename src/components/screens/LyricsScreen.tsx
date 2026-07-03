@@ -12,9 +12,11 @@ import {
   X,
   Music2,
   Play,
+  Link,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useLyrics } from '@/hooks/useLyrics';
+import { buildShareUrl } from '@/utils/shareUrl';
 import Skeleton from '@/components/ui/Skeleton';
 import CoverArt from '@/components/ui/CoverArt';
 import KaraokePreview from '@/components/karaoke/KaraokePreview';
@@ -139,6 +141,23 @@ export default function LyricsScreen() {
             </div>
           )}
         </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {song && (
+            <button
+              onClick={() => {
+                const url = buildShareUrl(song);
+                void navigator.clipboard.writeText(url).then(
+                  () => pushToast('success', 'Link copied'),
+                  () => pushToast('error', "Couldn't copy link")
+                );
+              }}
+              className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
+              aria-label="Copy share link"
+              title="Copy share link"
+            >
+              <Link size={14} className="text-neutral-500" />
+            </button>
+          )}
         <AnimatePresence>
           {hasSelection && (
             <motion.button
@@ -152,6 +171,7 @@ export default function LyricsScreen() {
             </motion.button>
           )}
         </AnimatePresence>
+        </div>
       </div>
 
       {isLoading && (

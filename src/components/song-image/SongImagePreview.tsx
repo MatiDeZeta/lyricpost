@@ -1,10 +1,11 @@
 import { forwardRef } from 'react';
 import { FALLBACK_COVER } from '@/constants/covers';
+import {
+  PLATFORM_LOGOS,
+  getPlatformForTag,
+} from '@/constants/platformLogos';
 import { getDisplayCoverUrl } from '@/services/coverArt';
 import { useAppStore } from '@/store/useAppStore';
-
-const SPOTIFY_LOGO =
-  'https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg';
 
 const FONT_MAP: Record<string, string> = {
   Poppins: "'Poppins', sans-serif",
@@ -73,7 +74,8 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
       useGradient,
       backgroundImage,
       lightText,
-      showSpotifyTag,
+      showPlatformTag,
+      platformTagOverride,
       showBackground,
       showWatermark,
       width,
@@ -121,6 +123,12 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
     };
 
     const coverSrc = getDisplayCoverUrl(song) ?? FALLBACK_COVER;
+
+    const platformTag = getPlatformForTag(
+      platformTagOverride,
+      song.sourcePlatform
+    );
+    const platformLogo = platformTag ? PLATFORM_LOGOS[platformTag] : null;
 
     const boxShadow = showBackground
       ? '0 30px 60px -20px rgba(0,0,0,0.55), 0 12px 24px -10px rgba(0,0,0,0.4)'
@@ -261,8 +269,8 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
           {selectedLyrics}
         </div>
 
-        {/* Spotify tag */}
-        {showSpotifyTag && (
+        {/* Platform tag */}
+        {showPlatformTag && platformLogo && (
           <div
             data-export-optional
             style={{
@@ -271,13 +279,13 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
               padding: '0 1rem 0.75rem',
               height: '1.6rem',
               filter: lightText
-                ? 'brightness(0) invert(1) opacity(0.7)'
-                : 'brightness(0) opacity(0.5)',
+                ? platformLogo.lightTextFilter
+                : platformLogo.darkTextFilter,
             }}
           >
             <img
-              src={SPOTIFY_LOGO}
-              alt="Spotify"
+              src={platformLogo.url}
+              alt={platformLogo.alt}
               crossOrigin="anonymous"
               style={{ height: '100%' }}
             />
@@ -300,7 +308,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
                 ? 'rgba(255,255,255,0.35)'
                 : 'rgba(0,0,0,0.35)',
               textAlign: 'right',
-              marginTop: showSpotifyTag ? 0 : 'auto',
+              marginTop: showPlatformTag && platformLogo ? 0 : 'auto',
             }}
           >
             made with lyricpost

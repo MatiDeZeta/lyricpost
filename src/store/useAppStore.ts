@@ -33,7 +33,7 @@ const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
   useGradient: false,
   backgroundImage: null,
   lightText: true,
-  showSpotifyTag: false,
+  showPlatformTag: false,
   showBackground: false,
   showWatermark: false,
   width: 320,
@@ -54,7 +54,7 @@ const BUILTIN_TEMPLATES: Template[] = [
       backgroundColor: '#0a0a0a',
       useGradient: false,
       lightText: true,
-      showSpotifyTag: false,
+      showPlatformTag: false,
       showBackground: false,
       showWatermark: false,
       fontFamily: 'Inter',
@@ -72,7 +72,7 @@ const BUILTIN_TEMPLATES: Template[] = [
       gradient: { from: '#1c1917', to: '#0a0a0a', angle: 180 },
       useGradient: true,
       lightText: true,
-      showSpotifyTag: true,
+      showPlatformTag: true,
       showBackground: true,
       showWatermark: false,
       fontFamily: 'Playfair Display',
@@ -90,7 +90,7 @@ const BUILTIN_TEMPLATES: Template[] = [
       gradient: { from: '#18181b', to: '#3a3a3a', angle: 135 },
       useGradient: true,
       lightText: true,
-      showSpotifyTag: false,
+      showPlatformTag: false,
       showBackground: true,
       showWatermark: true,
       fontFamily: 'Poppins',
@@ -116,8 +116,8 @@ interface AppState {
   selectSong: (index: number) => void;
   usedDirectLink: boolean;
   setUsedDirectLink: (v: boolean) => void;
-  spotifyThumbForResolve: string | null;
-  setSpotifyThumbForResolve: (url: string | null) => void;
+  linkThumbForResolve: string | null;
+  setLinkThumbForResolve: (url: string | null) => void;
   setSongCover: (index: number, dataUrl: string | null) => void;
   resolveSongCovers: (indices?: number[]) => Promise<void>;
 
@@ -198,8 +198,8 @@ export const useAppStore = create<AppState>()(
       },
       usedDirectLink: false,
       setUsedDirectLink: (v) => set({ usedDirectLink: v }),
-      spotifyThumbForResolve: null,
-      setSpotifyThumbForResolve: (url) => set({ spotifyThumbForResolve: url }),
+      linkThumbForResolve: null,
+      setLinkThumbForResolve: (url) => set({ linkThumbForResolve: url }),
 
       setSongCover: (index, dataUrl) =>
         set((state) => {
@@ -231,7 +231,7 @@ export const useAppStore = create<AppState>()(
           });
 
           const thumb =
-            i === 0 ? get().spotifyThumbForResolve : null;
+            i === 0 ? get().linkThumbForResolve : null;
           const resolved = await resolveCoverForSong(song, thumb);
 
           set((s) => {
@@ -246,7 +246,7 @@ export const useAppStore = create<AppState>()(
           });
         }
 
-        set({ spotifyThumbForResolve: null });
+        set({ linkThumbForResolve: null });
       },
 
       // Recent searches
@@ -434,7 +434,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'lyricpost-store',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => createSafeStorage()),
       // Only persist user-facing prefs/history/templates, not transient state
       partialize: (state) => ({
@@ -452,12 +452,23 @@ export const useAppStore = create<AppState>()(
         const userTemplates = persistedTemplates.filter(
           (t) => !builtInIds.has(t.id)
         );
+        const migratedSettings = { ...(p.imageSettings ?? {}) } as Record<
+          string,
+          unknown
+        >;
+        if (
+          'showSpotifyTag' in migratedSettings &&
+          !('showPlatformTag' in migratedSettings)
+        ) {
+          migratedSettings.showPlatformTag = migratedSettings.showSpotifyTag;
+          delete migratedSettings.showSpotifyTag;
+        }
         return {
           ...current,
           ...p,
           imageSettings: {
             ...current.imageSettings,
-            ...(p.imageSettings ?? {}),
+            ...migratedSettings,
           },
           templates: [...BUILTIN_TEMPLATES, ...userTemplates],
         };
