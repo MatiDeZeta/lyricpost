@@ -39,10 +39,39 @@ export function setCors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
+export function getQuery(
+  req: VercelRequest
+): Record<string, string | string[] | undefined> {
+  if (req.query && Object.keys(req.query).length > 0) {
+    return req.query;
+  }
+  try {
+    const rawUrl = req.url ?? '';
+    const parsed = new URL(rawUrl, 'https://localhost');
+    const out: Record<string, string> = {};
+    parsed.searchParams.forEach((value, key) => {
+      out[key] = value;
+    });
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 export function queryParam(
   req: VercelRequest,
   key: string
 ): string | undefined {
-  const v = req.query[key];
+  const v = getQuery(req)[key];
   return Array.isArray(v) ? v[0] : v;
 }
+
+function lastfmApiKey(): string | undefined {
+  return (
+    process.env.LASTFM_API_KEY?.trim() ||
+    process.env.VITE_LASTFM_API_KEY?.trim() ||
+    undefined
+  );
+}
+
+export { lastfmApiKey };

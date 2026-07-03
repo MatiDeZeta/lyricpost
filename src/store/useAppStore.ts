@@ -443,6 +443,30 @@ export const useAppStore = create<AppState>()(
         history: state.history,
         templates: state.templates,
       }),
+      migrate: (persisted, version) => {
+        if (version >= 3) return persisted as Partial<AppState>;
+
+        const state = (persisted ?? {}) as {
+          imageSettings?: Record<string, unknown>;
+          recentSearches?: string[];
+          history?: HistoryEntry[];
+          templates?: Template[];
+        };
+
+        const imageSettings = { ...(state.imageSettings ?? {}) };
+        if (
+          'showSpotifyTag' in imageSettings &&
+          !('showPlatformTag' in imageSettings)
+        ) {
+          imageSettings.showPlatformTag = imageSettings.showSpotifyTag;
+          delete imageSettings.showSpotifyTag;
+        }
+
+        return {
+          ...state,
+          imageSettings,
+        } as unknown as Partial<AppState>;
+      },
       // Ensure built-in templates are always available even if storage
       // was written by an older version that didn't include them.
       merge: (persisted, current) => {

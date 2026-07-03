@@ -5,6 +5,8 @@ import {
   checkRateLimit,
   setCors,
   queryParam,
+  getQuery,
+  lastfmApiKey,
 } from './_lib.js';
 
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
@@ -29,9 +31,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(429).json({ error: 'Rate limit exceeded' });
   }
 
-  const apiKey = process.env.LASTFM_API_KEY;
+  const apiKey = lastfmApiKey();
   if (!apiKey) {
-    return res.status(500).json({ error: 'Last.fm API key not configured' });
+    return res.status(500).json({
+      error:
+        'Last.fm API key not configured. Set LASTFM_API_KEY in Vercel environment variables.',
+    });
   }
 
   const method = queryParam(req, 'method');
@@ -44,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   params.set('api_key', apiKey);
   params.set('format', 'json');
 
-  for (const [key, value] of Object.entries(req.query)) {
+  for (const [key, value] of Object.entries(getQuery(req))) {
     if (key === 'method') continue;
     const v = Array.isArray(value) ? value[0] : value;
     if (v) params.set(key, v);
