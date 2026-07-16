@@ -203,8 +203,10 @@ export default function LyricsScreen() {
                       .map((i) => lyrics[i]?.text)
                       .filter(Boolean)
                       .join('\n');
-                    navigator.clipboard.writeText(text);
-                    pushToast('success', 'Lyrics copied');
+                    void navigator.clipboard.writeText(text).then(
+                      () => pushToast('success', 'Lyrics copied'),
+                      () => pushToast('error', "Couldn't copy lyrics")
+                    );
                   }}
                   className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors flex items-center gap-1"
                   title="Copy selected lyrics"
@@ -284,6 +286,8 @@ export default function LyricsScreen() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') commitEdit();
                         if (e.key === 'Escape') {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setEditingIndex(null);
                           setEditingText('');
                         }
@@ -383,6 +387,8 @@ export default function LyricsScreen() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') commitCustom();
                   if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setCustomText('');
                     setAddingCustom(false);
                   }

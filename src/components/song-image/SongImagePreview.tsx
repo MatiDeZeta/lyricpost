@@ -34,13 +34,11 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
     },
     ref
   ) => {
-    const {
-      songs,
-      selectedSongIndex,
-      selectedLyricIndices,
-      lyricOrder,
-      imageSettings,
-    } = useAppStore();
+    const songs = useAppStore((s) => s.songs);
+    const selectedSongIndex = useAppStore((s) => s.selectedSongIndex);
+    const selectedLyricIndices = useAppStore((s) => s.selectedLyricIndices);
+    const lyricOrder = useAppStore((s) => s.lyricOrder);
+    const imageSettings = useAppStore((s) => s.imageSettings);
 
     const song =
       selectedSongIndex !== null ? songs[selectedSongIndex] : null;

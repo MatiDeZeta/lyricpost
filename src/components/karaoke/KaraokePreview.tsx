@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, X, RotateCcw, Check, Plus } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -45,12 +45,23 @@ export default function KaraokePreview({ open, onClose }: KaraokePreviewProps) {
   const lastTickRef = useRef<number>(0);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const handleClose = useCallback(() => {
+    setPlaying(false);
+    setNow(0);
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
-    if (!open) {
-      setPlaying(false);
-      setNow(0);
-    }
-  }, [open]);
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handleClose();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [open, handleClose]);
 
   useEffect(() => {
     if (!playing) {
@@ -121,7 +132,7 @@ export default function KaraokePreview({ open, onClose }: KaraokePreviewProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70]"
           />
           <motion.div
@@ -139,7 +150,7 @@ export default function KaraokePreview({ open, onClose }: KaraokePreviewProps) {
                 </span>
               </div>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
                 aria-label="Close"
               >

@@ -28,28 +28,22 @@ export default function ImageScreen() {
 
   const [activeTab, setActiveTab] = useState<ImageTab>('background');
   const [coverPalette, setCoverPalette] = useState<string[]>([]);
-  const [shareAvailable, setShareAvailable] = useState(false);
+  const [shareAvailable] = useState(() => canShareFiles());
 
   const song = selectedSongIndex !== null ? songs[selectedSongIndex] : null;
+  const coverUrl = song ? getDisplayCoverUrl(song) : null;
+  const displayPalette = coverUrl ? coverPalette : [];
 
   useEffect(() => {
-    setShareAvailable(canShareFiles());
-  }, []);
-
-  useEffect(() => {
+    if (!coverUrl) return;
     let cancelled = false;
-    const coverUrl = song ? getDisplayCoverUrl(song) : null;
-    if (coverUrl) {
-      extractPalette(coverUrl, 5).then((colors) => {
-        if (!cancelled) setCoverPalette(colors);
-      });
-    } else {
-      setCoverPalette([]);
-    }
+    extractPalette(coverUrl, 5).then((colors) => {
+      if (!cancelled) setCoverPalette(colors);
+    });
     return () => {
       cancelled = true;
     };
-  }, [song?.customCoverUrl, song?.coverResolvedUrl, song?.albumCoverUrl]);
+  }, [coverUrl]);
 
   const handleBack = () => {
     if (song?.lyrics && song.lyrics.length > 0) {
@@ -122,7 +116,7 @@ export default function ImageScreen() {
             <BackgroundTab
               song={song}
               selectedSongIndex={selectedSongIndex}
-              coverPalette={coverPalette}
+              coverPalette={displayPalette}
               onPickBackgroundFile={onPickBackgroundFile}
             />
           </motion.div>

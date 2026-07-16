@@ -70,6 +70,18 @@ async function renderBlob(node: HTMLElement, mode: ExportMode) {
   }
 }
 
+/** Always PNG — ClipboardItem is most reliable with image/png across browsers. */
+async function renderClipboardBlob(node: HTMLElement, mode: ExportMode) {
+  const restoreInline = await inlineExternalImages(node);
+  const restoreMode = prepareExportNode(node, mode);
+  try {
+    return await toBlob(node, htmlToImageOptions());
+  } finally {
+    restoreMode();
+    restoreInline();
+  }
+}
+
 export function useImageExport() {
   const downloadImage = useCallback(
     async (node: HTMLElement | null, mode: ExportMode = 'full') => {
@@ -175,11 +187,11 @@ export function useImageExport() {
       setLoading(true, 'Copying to clipboard...');
 
       try {
-        const blob = await renderBlob(node, mode);
+        const blob = await renderClipboardBlob(node, mode);
         if (!blob) throw new Error('No blob produced');
 
         await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob }),
+          new ClipboardItem({ [blob.type || 'image/png']: blob }),
         ]);
         pushToast('success', 'Copied to clipboard');
       } catch (err) {

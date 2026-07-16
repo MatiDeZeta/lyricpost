@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useLayoutEffect, useState } from 'react';
 import SongImagePreview from '@/components/song-image/SongImagePreview';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -10,9 +10,10 @@ export default function ImagePreviewPane({
   const containerRef = useRef<HTMLDivElement>(null);
   const imageSettings = useAppStore((s) => s.imageSettings);
   const [scale, setScale] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
 
-  useEffect(() => {
-    const updateScale = () => {
+  useLayoutEffect(() => {
+    const update = () => {
       if (!containerRef.current) return;
       const containerWidth = containerRef.current.clientWidth - 32;
       const imgWidth = imageSettings.width;
@@ -21,11 +22,23 @@ export default function ImagePreviewPane({
       } else {
         setScale(1);
       }
+      setContentHeight(imageRef.current?.offsetHeight ?? 0);
     };
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
-  }, [imageSettings.width]);
+
+    update();
+    window.addEventListener('resize', update);
+
+    const previewEl = imageRef.current;
+    const containerEl = containerRef.current;
+    const ro = new ResizeObserver(update);
+    if (previewEl) ro.observe(previewEl);
+    if (containerEl) ro.observe(containerEl);
+
+    return () => {
+      window.removeEventListener('resize', update);
+      ro.disconnect();
+    };
+  }, [imageSettings.width, imageRef]);
 
   return (
     <div
@@ -36,7 +49,7 @@ export default function ImagePreviewPane({
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'top center',
-          marginBottom: `${(scale - 1) * (imageRef.current?.offsetHeight ?? 0)}px`,
+          marginBottom: `${(scale - 1) * contentHeight}px`,
         }}
       >
         <SongImagePreview ref={imageRef} />

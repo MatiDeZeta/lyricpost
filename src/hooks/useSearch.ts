@@ -8,7 +8,7 @@ import type { MusicPlatform } from '@/types';
 export function useSearch() {
   const searchByName = useCallback(async (query: string) => {
     const state = useAppStore.getState();
-    const cleaned = query.replace(/[\\\/]/g, '').trim();
+    const cleaned = query.replace(/[\\/]/g, '').trim();
     if (!cleaned) {
       state.setError("Hold on! Haven't you forgotten about something?");
       return;

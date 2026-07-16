@@ -3,8 +3,8 @@ export function parseArtistTitle(raw: string): {
   artist: string;
   title: string;
 } | null {
-  let cleaned = raw
-    .replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, ' ')
+  const cleaned = raw
+    .replace(/\s*[(\[][^)\]]*[)\]]\s*/g, ' ')
     .replace(/\s*[-–—|]\s*(official|lyric|audio|video|mv|hd|4k|visualizer|topic).*$/i, '')
     .replace(/\s+/g, ' ')
     .trim();

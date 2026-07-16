@@ -51,6 +51,8 @@ export default function ImageTemplatesRow() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') onSaveTemplate();
               if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
                 setTemplateName('');
                 setSavingTemplate(false);
               }
