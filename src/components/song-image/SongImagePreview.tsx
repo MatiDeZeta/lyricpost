@@ -76,11 +76,20 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
       platformTagOverride,
       showBackground,
       showWatermark,
+      showCover,
+      showTitle,
+      showArtist,
+      lineHeight,
       width,
       fontSize,
       fontFamily,
       aspectRatio,
     } = imageSettings;
+
+    const showCoverArt = showCover !== false;
+    const showSongTitle = showTitle !== false;
+    const showSongArtist = showArtist !== false;
+    const lyricLineHeight = lineHeight ?? 1.4;
 
     const bgStyle = useGradient && gradient
       ? {
@@ -183,64 +192,75 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
         )}
 
         {/* Header: cover + song info */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            padding: '1.1rem 1rem 0',
-          }}
-        >
-          <img
-            className="song-export-cover"
-            src={coverSrc}
-            alt="Album cover"
-            crossOrigin="anonymous"
+        {(showCoverArt || showSongTitle || showSongArtist) && (
+          <div
+            data-export-header
             style={{
-              width: '2.2rem',
-              height: '2.2rem',
-              borderRadius: '0.4rem',
-              objectFit: 'cover',
+              position: 'relative',
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              padding: '1.1rem 1rem 0',
             }}
-          />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onPaste={handlePaste}
-              onBlur={(e) => onNameChange?.(e.currentTarget.textContent ?? '')}
-              style={{
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                lineHeight: '1.1rem',
-                letterSpacing: '-0.01em',
-                outline: 'none',
-              }}
-            >
-              {name}
-            </div>
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onPaste={handlePaste}
-              onBlur={(e) =>
-                onArtistChange?.(e.currentTarget.textContent ?? '')
-              }
-              style={{
-                fontSize: '0.7rem',
-                lineHeight: '0.95rem',
-                fontWeight: 500,
-                color: subTextColor,
-                outline: 'none',
-                marginTop: '0.1rem',
-              }}
-            >
-              {artist}
-            </div>
+          >
+            {showCoverArt && (
+              <img
+                className="song-export-cover"
+                src={coverSrc}
+                alt="Album cover"
+                crossOrigin="anonymous"
+                style={{
+                  width: '2.2rem',
+                  height: '2.2rem',
+                  borderRadius: '0.4rem',
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+            {(showSongTitle || showSongArtist) && (
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {showSongTitle && (
+                  <div
+                    contentEditable
+                    suppressContentEditableWarning
+                    onPaste={handlePaste}
+                    onBlur={(e) => onNameChange?.(e.currentTarget.textContent ?? '')}
+                    style={{
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      lineHeight: '1.1rem',
+                      letterSpacing: '-0.01em',
+                      outline: 'none',
+                    }}
+                  >
+                    {name}
+                  </div>
+                )}
+                {showSongArtist && (
+                  <div
+                    contentEditable
+                    suppressContentEditableWarning
+                    onPaste={handlePaste}
+                    onBlur={(e) =>
+                      onArtistChange?.(e.currentTarget.textContent ?? '')
+                    }
+                    style={{
+                      fontSize: '0.7rem',
+                      lineHeight: '0.95rem',
+                      fontWeight: 500,
+                      color: subTextColor,
+                      outline: 'none',
+                      marginTop: showSongTitle ? '0.1rem' : 0,
+                    }}
+                  >
+                    {artist}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Lyrics */}
         <div
@@ -254,7 +274,7 @@ const SongImagePreview = forwardRef<HTMLDivElement, SongImagePreviewProps>(
             zIndex: 1,
             fontSize: `${fontSize}px`,
             fontWeight: 700,
-            lineHeight: 1.4,
+            lineHeight: lyricLineHeight,
             letterSpacing: '-0.01em',
             padding: '1rem',
             outline: 'none',

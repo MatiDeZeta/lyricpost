@@ -66,12 +66,12 @@ export const EXPORT_MODES: {
   {
     value: 'transparent',
     label: 'No background',
-    description: 'Lyrics and cover on a transparent PNG',
+    description: 'Header and lyrics on a transparent PNG',
   },
   {
-    value: 'content',
-    label: 'Content only',
-    description: 'No background, Spotify tag, or watermark',
+    value: 'lyrics',
+    label: 'Lyrics only',
+    description: 'Just the lyric lines on a transparent PNG',
   },
   {
     value: 'cover',

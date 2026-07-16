@@ -63,7 +63,7 @@ export type ExportResolution = 1 | 2 | 4;
 export type ExportMode =
   | 'full'
   | 'transparent'
-  | 'content'
+  | 'lyrics'
   | 'cover';
 
 export interface ImageSettings {
@@ -76,6 +76,11 @@ export interface ImageSettings {
   platformTagOverride?: MusicPlatform;
   showBackground: boolean;
   showWatermark: boolean;
+  showCover: boolean;
+  showTitle: boolean;
+  showArtist: boolean;
+  /** CSS line-height for lyric lines (e.g. 1.4). Higher = more vertical gap. */
+  lineHeight: number;
   width: number;
   fontSize: number;
   fontFamily: string;

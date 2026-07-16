@@ -31,14 +31,18 @@ export function prepareExportNode(
     });
   });
 
-  if (mode === 'content') {
-    node.querySelectorAll<HTMLElement>('[data-export-optional]').forEach((el) => {
-      const prev = el.style.display;
-      el.style.display = 'none';
-      restores.push(() => {
-        el.style.display = prev;
+  if (mode === 'lyrics') {
+    node
+      .querySelectorAll<HTMLElement>(
+        '[data-export-header], [data-export-optional]'
+      )
+      .forEach((el) => {
+        const prev = el.style.display;
+        el.style.display = 'none';
+        restores.push(() => {
+          el.style.display = prev;
+        });
       });
-    });
   }
 
   return () => restores.forEach((r) => r());
@@ -48,7 +52,7 @@ export function exportFormatForMode(
   mode: ExportMode,
   preferred: 'png' | 'jpeg' | 'svg'
 ): 'png' | 'jpeg' | 'svg' {
-  if (mode === 'transparent' || mode === 'content') return 'png';
+  if (mode === 'transparent' || mode === 'lyrics') return 'png';
   return preferred;
 }
 

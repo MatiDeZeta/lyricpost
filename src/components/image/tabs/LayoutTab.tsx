@@ -94,7 +94,7 @@ export default function LayoutTab() {
             </div>
           ))}
           <p className="text-[10px] text-neutral-700 pt-1">
-            Use the Save menu in the toolbar. Transparent modes export as PNG.
+            Use the Save menu in the toolbar. No background and Lyrics only export as PNG.
           </p>
         </div>
       </ControlSection>

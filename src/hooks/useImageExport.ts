@@ -136,8 +136,8 @@ export function useImageExport() {
       const suffix =
         mode === 'transparent'
           ? ' (transparent)'
-          : mode === 'content'
-            ? ' (content)'
+          : mode === 'lyrics'
+            ? ' (lyrics)'
             : '';
       const fileName = `${base}${suffix}.${ext}`;
 
@@ -146,7 +146,7 @@ export function useImageExport() {
       try {
         const dataUrl = await renderNode(node, format, mode);
 
-        if (mode === 'full') {
+        if (mode !== 'cover') {
           const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
           addHistoryEntry({
             id: crypto.randomUUID(),

@@ -27,7 +27,7 @@ const PRESET_COLORS = [
   '#111827',
 ];
 
-const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
+export const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
   backgroundColor: PRESET_COLORS[0],
   gradient: null,
   useGradient: false,
@@ -36,6 +36,10 @@ const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
   showPlatformTag: false,
   showBackground: false,
   showWatermark: false,
+  showCover: true,
+  showTitle: true,
+  showArtist: true,
+  lineHeight: 1.4,
   width: 320,
   fontSize: 20,
   fontFamily: 'Poppins',
@@ -365,7 +369,11 @@ export const useAppStore = create<AppState>()(
       },
       applyTemplate: (template) =>
         set((state) => ({
-          imageSettings: { ...state.imageSettings, ...template.settings },
+          imageSettings: {
+            ...DEFAULT_IMAGE_SETTINGS,
+            ...state.imageSettings,
+            ...template.settings,
+          },
         })),
 
       // Loading / error
@@ -513,6 +521,7 @@ export const useAppStore = create<AppState>()(
           ...current,
           ...p,
           imageSettings: {
+            ...DEFAULT_IMAGE_SETTINGS,
             ...current.imageSettings,
             ...migratedSettings,
           },

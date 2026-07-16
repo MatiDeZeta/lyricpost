@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Download, RotateCcw } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore, DEFAULT_IMAGE_SETTINGS } from '@/store/useAppStore';
 import type { HistoryEntry, Song } from '@/types';
 
 function formatDate(ts: number): string {
@@ -55,7 +55,7 @@ export default function HistoryDrawer() {
       selectedLyricIndices: new Set(allIndices),
     });
     setLyricOrder(allIndices);
-    updateImageSettings(entry.settings);
+    updateImageSettings({ ...DEFAULT_IMAGE_SETTINGS, ...entry.settings });
     setStep(4);
     closeHistoryDrawer();
     pushToast('success', 'Restored from history');

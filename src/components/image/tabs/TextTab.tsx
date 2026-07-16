@@ -1,6 +1,7 @@
-import { Type, Languages, AlignLeft } from 'lucide-react';
+import { Type, Languages, AlignLeft, Rows3 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { ControlSection } from '../shared/ControlSection';
+import { ToggleSwitch } from '../shared/ToggleSwitch';
 import { FONT_FAMILIES, LANG_OPTIONS } from '../imageConstants';
 
 export default function TextTab() {
@@ -39,6 +40,47 @@ export default function TextTab() {
           className="w-full h-1 rounded-full appearance-none bg-white/[0.06]"
         />
       </ControlSection>
+
+      <ControlSection
+        icon={Rows3}
+        label={`Line spacing ${Number(imageSettings.lineHeight ?? 1.4).toFixed(1)}`}
+      >
+        <input
+          type="range"
+          min={1.1}
+          max={2.8}
+          step={0.1}
+          value={imageSettings.lineHeight ?? 1.4}
+          onChange={(e) =>
+            updateImageSettings({ lineHeight: Number(e.target.value) })
+          }
+          className="w-full h-1 rounded-full appearance-none bg-white/[0.06]"
+        />
+      </ControlSection>
+
+      <div className="grid grid-cols-3 gap-2">
+        <ControlSection label="Cover" compact>
+          <ToggleSwitch
+            label="Cover"
+            checked={imageSettings.showCover ?? true}
+            onChange={(v) => updateImageSettings({ showCover: v })}
+          />
+        </ControlSection>
+        <ControlSection label="Title" compact>
+          <ToggleSwitch
+            label="Title"
+            checked={imageSettings.showTitle ?? true}
+            onChange={(v) => updateImageSettings({ showTitle: v })}
+          />
+        </ControlSection>
+        <ControlSection label="Artist" compact>
+          <ToggleSwitch
+            label="Artist"
+            checked={imageSettings.showArtist ?? true}
+            onChange={(v) => updateImageSettings({ showArtist: v })}
+          />
+        </ControlSection>
+      </div>
 
       <ControlSection icon={Languages} label="Glyphs">
         <div className="flex gap-1.5 flex-wrap">
