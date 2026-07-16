@@ -146,23 +146,21 @@ export function useImageExport() {
       try {
         const dataUrl = await renderNode(node, format, mode);
 
-        if (mode !== 'cover') {
-          const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
-          addHistoryEntry({
-            id: crypto.randomUUID(),
-            songName: song.name,
-            artistName: song.artists.map((a) => a.name).join(', '),
-            albumCoverUrl: getDisplayCoverUrl(song),
-            lyrics:
-              node.querySelector('.song-image-lyrics')?.textContent ?? '',
-            settings: {
-              ...imageSettings,
-              backgroundImage: null,
-            },
-            thumbnailDataUrl,
-            createdAt: Date.now(),
-          });
-        }
+        const thumbnailDataUrl = await compressDataUrl(dataUrl, 240, 0.78);
+        addHistoryEntry({
+          id: crypto.randomUUID(),
+          songName: song.name,
+          artistName: song.artists.map((a) => a.name).join(', '),
+          albumCoverUrl: getDisplayCoverUrl(song),
+          lyrics:
+            node.querySelector('.song-image-lyrics')?.textContent ?? '',
+          settings: {
+            ...imageSettings,
+            backgroundImage: null,
+          },
+          thumbnailDataUrl,
+          createdAt: Date.now(),
+        });
 
         const res = await fetch(dataUrl);
         const blob = await res.blob();
