@@ -26,6 +26,15 @@ function songFileBase(song: { name: string; artists: { name: string }[] }) {
   return `${song.artists.map((a) => a.name).join(', ')} - ${song.name}`;
 }
 
+function htmlToImageOptions() {
+  const { imageSettings } = useAppStore.getState();
+  return {
+    pixelRatio: window.devicePixelRatio * imageSettings.resolution,
+    cacheBust: true,
+    skipFonts: true,
+  };
+}
+
 async function renderNode(
   node: HTMLElement,
   format: 'png' | 'jpeg' | 'svg',
@@ -35,11 +44,7 @@ async function renderNode(
   const restoreMode = prepareExportNode(node, mode);
   try {
     const renderer = pickRenderer(format);
-    const { imageSettings } = useAppStore.getState();
-    return await renderer(node, {
-      pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-      cacheBust: true,
-    });
+    return await renderer(node, htmlToImageOptions());
   } finally {
     restoreMode();
     restoreInline();
@@ -52,16 +57,13 @@ async function renderBlob(node: HTMLElement, mode: ExportMode) {
   try {
     const { imageSettings } = useAppStore.getState();
     const format = exportFormatForMode(mode, imageSettings.format);
+    const opts = htmlToImageOptions();
     if (format === 'jpeg') {
-      return await toJpeg(node, {
-        pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-        cacheBust: true,
-      }).then((url) => fetch(url).then((r) => r.blob()));
+      return await toJpeg(node, opts).then((url) =>
+        fetch(url).then((r) => r.blob())
+      );
     }
-    return await toBlob(node, {
-      pixelRatio: window.devicePixelRatio * imageSettings.resolution,
-      cacheBust: true,
-    });
+    return await toBlob(node, opts);
   } finally {
     restoreMode();
     restoreInline();
@@ -141,7 +143,10 @@ export function useImageExport() {
             albumCoverUrl: getDisplayCoverUrl(song),
             lyrics:
               node.querySelector('.song-image-lyrics')?.textContent ?? '',
-            settings: { ...imageSettings },
+            settings: {
+              ...imageSettings,
+              backgroundImage: null,
+            },
             thumbnailDataUrl,
             createdAt: Date.now(),
           });

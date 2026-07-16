@@ -438,14 +438,16 @@ export const useAppStore = create<AppState>()(
       storage: createJSONStorage(() => createSafeStorage()),
       // Only persist user-facing prefs/history/templates, not transient state
       partialize: (state) => ({
-        imageSettings: state.imageSettings,
+        imageSettings: {
+          ...state.imageSettings,
+          // Session-only — large data URLs must not fill localStorage
+          backgroundImage: null,
+        },
         recentSearches: state.recentSearches,
         history: state.history,
         templates: state.templates,
       }),
       migrate: (persisted, version) => {
-        if (version >= 3) return persisted as Partial<AppState>;
-
         const state = (persisted ?? {}) as {
           imageSettings?: Record<string, unknown>;
           recentSearches?: string[];
@@ -460,6 +462,13 @@ export const useAppStore = create<AppState>()(
         ) {
           imageSettings.showPlatformTag = imageSettings.showSpotifyTag;
           delete imageSettings.showSpotifyTag;
+        }
+        if ('backgroundImage' in imageSettings) {
+          imageSettings.backgroundImage = null;
+        }
+
+        if (version >= 3) {
+          return { ...state, imageSettings } as unknown as Partial<AppState>;
         }
 
         return {
@@ -486,6 +495,9 @@ export const useAppStore = create<AppState>()(
         ) {
           migratedSettings.showPlatformTag = migratedSettings.showSpotifyTag;
           delete migratedSettings.showSpotifyTag;
+        }
+        if ('backgroundImage' in migratedSettings) {
+          migratedSettings.backgroundImage = null;
         }
         return {
           ...current,

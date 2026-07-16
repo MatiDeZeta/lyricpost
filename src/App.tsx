@@ -33,8 +33,14 @@ function App() {
   }, [initFromShareUrl]);
 
   useEffect(() => {
-    const onTrim = () =>
-      pushToast('info', 'Storage full — older history entries were trimmed');
+    const trimToastShown = { current: false };
+    const onTrim = () => {
+      if (trimToastShown.current) return;
+      trimToastShown.current = true;
+      window.setTimeout(() => {
+        pushToast('info', 'Storage full — cleared heavy images from saved settings');
+      }, 0);
+    };
     window.addEventListener('lyricpost-storage-trim', onTrim);
     return () => window.removeEventListener('lyricpost-storage-trim', onTrim);
   }, [pushToast]);

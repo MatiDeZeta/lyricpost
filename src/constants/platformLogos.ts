@@ -8,42 +8,43 @@ export interface PlatformLogo {
   darkTextFilter: string;
 }
 
+/** Monochrome wordmarks served from /public/logos — reliable vs Wikimedia 404s */
 export const PLATFORM_LOGOS: Record<
   Exclude<MusicPlatform, 'search'>,
   PlatformLogo
 > = {
   spotify: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg',
+    url: '/logos/spotify.svg',
     alt: 'Spotify',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.7)',
     darkTextFilter: 'brightness(0) opacity(0.5)',
   },
   apple: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Apple_Music_logo.svg',
+    url: '/logos/apple-music.svg',
     alt: 'Apple Music',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },
   youtube: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Music_Logo.svg',
+    url: '/logos/youtube-music.svg',
     alt: 'YouTube Music',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },
   tidal: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Tidal_logo.svg',
+    url: '/logos/tidal.svg',
     alt: 'Tidal',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },
   deezer: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Deezer_logo%2C_2019.svg',
+    url: '/logos/deezer.svg',
     alt: 'Deezer',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },
   amazon: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Amazon_Music_logo.svg',
+    url: '/logos/amazon-music.svg',
     alt: 'Amazon Music',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
