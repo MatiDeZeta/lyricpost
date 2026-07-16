@@ -10,15 +10,12 @@ import {
 const ALLOWED_HOSTS = [
   'spotify.com',
   'spoti.fi',
+  'spotify.link',
   'youtu.be',
   'youtube.com',
   'music.youtube.com',
-  'tidal.com',
-  'listen.tidal.com',
   'deezer.com',
   'music.apple.com',
-  'amazon.com',
-  'music.amazon.com',
 ];
 
 function isAllowedUrl(raw: string): boolean {

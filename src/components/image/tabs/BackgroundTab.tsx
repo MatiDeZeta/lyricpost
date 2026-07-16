@@ -161,6 +161,7 @@ export default function BackgroundTab({
       <ControlSection icon={Palette} label="Gradient">
         <div className="flex items-center gap-3">
           <ToggleSwitch
+            label="Use gradient"
             checked={imageSettings.useGradient}
             onChange={(v) =>
               updateImageSettings({
@@ -329,18 +330,21 @@ export default function BackgroundTab({
       <div className="grid grid-cols-3 gap-2">
         <ControlSection label="Light text" compact>
           <ToggleSwitch
+            label="Light text"
             checked={imageSettings.lightText}
             onChange={(v) => updateImageSettings({ lightText: v })}
           />
         </ControlSection>
         <ControlSection label="Platform tag" compact>
           <ToggleSwitch
+            label="Platform tag"
             checked={imageSettings.showPlatformTag}
             onChange={(v) => updateImageSettings({ showPlatformTag: v })}
           />
         </ControlSection>
         <ControlSection label="Shadow" compact>
           <ToggleSwitch
+            label="Shadow"
             checked={imageSettings.showBackground}
             onChange={(v) => updateImageSettings({ showBackground: v })}
           />
@@ -348,6 +352,7 @@ export default function BackgroundTab({
       </div>
       <ControlSection label="Watermark" compact>
         <ToggleSwitch
+          label="Watermark"
           checked={imageSettings.showWatermark}
           onChange={(v) => updateImageSettings({ showWatermark: v })}
         />

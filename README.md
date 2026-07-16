@@ -4,7 +4,7 @@
 
 ## About
 
-LyricPost lets you search for any song, pick your favourite lines, and export a beautiful shareable image. Paste links from **Spotify, Apple Music, Deezer, YouTube, Tidal, or Amazon Music** — or search by name.
+LyricPost lets you search for any song, pick your favourite lines, and export a beautiful shareable image. Paste links from **Spotify, Apple Music, Deezer, or YouTube Music** — or search by name.
 
 ### Highlights
 
@@ -29,7 +29,7 @@ LyricPost lets you search for any song, pick your favourite lines, and export a 
 ## Data sources
 
 - Song search — [Last.fm](https://www.last.fm/) API (proxied via `/api/lastfm`)
-- Link paste — Spotify oEmbed, Apple/iTunes Lookup, Deezer API, YouTube oEmbed, Tidal/Amazon metadata proxy
+- Link paste — Spotify oEmbed, Apple/iTunes Lookup, Deezer API, YouTube oEmbed
 - Cover fallback — [iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/) (no key)
 - Lyrics — [lrclib](https://lrclib.net/docs)
 
@@ -65,7 +65,7 @@ Deploy to **Vercel** (recommended). Set environment variables:
 |----------|-------|----------|
 | `LASTFM_API_KEY` | Server | Yes |
 | `VITE_PLAUSIBLE_DOMAIN` | Client | No |
-| `VITE_SITE_URL` | Client | No (canonical/share URLs) |
+| `VITE_SITE_URL` | Client | No (canonical/share/OG URLs) |
 
 After changing `package.json`, run `npm install` and commit `package-lock.json`.
 
@@ -86,4 +86,4 @@ After changing `package.json`, run `npm install` and commit `package-lock.json`.
 
 ## Disclaimer
 
-Not affiliated with Spotify, Apple, YouTube, Tidal, Deezer, Amazon, or Last.fm. Platform logos are used for identification only from public sources.
+Not affiliated with Spotify, Apple, YouTube, Deezer, or Last.fm. Platform logos are used for identification only from public sources.

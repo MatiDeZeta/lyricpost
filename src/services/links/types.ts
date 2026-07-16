@@ -12,8 +12,6 @@ export const PLATFORM_LABELS: Record<MusicPlatform, string> = {
   spotify: 'Spotify',
   apple: 'Apple Music',
   youtube: 'YouTube Music',
-  tidal: 'Tidal',
   deezer: 'Deezer',
-  amazon: 'Amazon Music',
   search: 'Search',
 };

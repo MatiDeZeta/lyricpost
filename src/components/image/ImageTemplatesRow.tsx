@@ -93,7 +93,7 @@ export default function ImageTemplatesRow() {
             {!t.builtIn && (
               <button
                 onClick={() => removeTemplate(t.id)}
-                className="pr-2 py-1 text-neutral-700 hover:text-neutral-300 transition-colors opacity-0 group-hover:opacity-100"
+                className="pr-2 py-1 text-neutral-600 hover:text-neutral-300 transition-colors"
                 aria-label={`Delete ${t.name}`}
               >
                 <X size={9} />

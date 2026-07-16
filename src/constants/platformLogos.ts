@@ -8,7 +8,7 @@ export interface PlatformLogo {
   darkTextFilter: string;
 }
 
-/** Monochrome wordmarks served from /public/logos — reliable vs Wikimedia 404s */
+/** Monochrome wordmarks served from /public/logos */
 export const PLATFORM_LOGOS: Record<
   Exclude<MusicPlatform, 'search'>,
   PlatformLogo
@@ -31,21 +31,9 @@ export const PLATFORM_LOGOS: Record<
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },
-  tidal: {
-    url: '/logos/tidal.svg',
-    alt: 'Tidal',
-    lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
-    darkTextFilter: 'brightness(0) opacity(0.55)',
-  },
   deezer: {
     url: '/logos/deezer.svg',
     alt: 'Deezer',
-    lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
-    darkTextFilter: 'brightness(0) opacity(0.55)',
-  },
-  amazon: {
-    url: '/logos/amazon-music.svg',
-    alt: 'Amazon Music',
     lightTextFilter: 'brightness(0) invert(1) opacity(0.75)',
     darkTextFilter: 'brightness(0) opacity(0.55)',
   },

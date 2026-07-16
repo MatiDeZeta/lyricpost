@@ -142,13 +142,14 @@ export default function HistoryDrawer() {
                         onClick={() => restore(entry)}
                         className="block w-full aspect-square bg-white/[0.04] overflow-hidden relative"
                         title="Restore"
+                        aria-label={`Restore ${entry.songName}`}
                       >
                         <img
                           src={entry.thumbnailDataUrl}
                           alt=""
                           className="w-full h-full object-contain"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <span className="text-[11px] font-semibold text-white px-2 py-1 rounded-md bg-white/10 backdrop-blur">
                             Restore
                           </span>

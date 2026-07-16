@@ -5,18 +5,6 @@ export async function resolveUrl(url: string): Promise<string> {
   return data.url;
 }
 
-export interface PageMetadata {
-  title: string | null;
-  image: string | null;
-  url: string;
-}
-
-export async function fetchPageMetadata(url: string): Promise<PageMetadata> {
-  const res = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error('Failed to fetch metadata');
-  return res.json() as Promise<PageMetadata>;
-}
-
 export async function lastfmApi(
   params: Record<string, string>
 ): Promise<unknown> {

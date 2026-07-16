@@ -30,9 +30,7 @@ export type MusicPlatform =
   | 'spotify'
   | 'apple'
   | 'youtube'
-  | 'tidal'
   | 'deezer'
-  | 'amazon'
   | 'search';
 
 export type AspectRatio =

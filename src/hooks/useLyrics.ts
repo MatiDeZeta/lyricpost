@@ -60,6 +60,10 @@ export function useLyrics() {
         hasSyncedLyrics: false,
       };
       freshState.setSongs(freshSongs);
+      freshState.pushToast(
+        'error',
+        "Couldn't load lyrics. Check your connection and try again."
+      );
     } finally {
       useAppStore.getState().setLoading(false);
     }

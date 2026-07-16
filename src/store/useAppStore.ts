@@ -466,6 +466,11 @@ export const useAppStore = create<AppState>()(
         if ('backgroundImage' in imageSettings) {
           imageSettings.backgroundImage = null;
         }
+        const tagOverride = imageSettings.platformTagOverride;
+        if (tagOverride === 'amazon' || tagOverride === 'tidal') {
+          delete imageSettings.platformTagOverride;
+          imageSettings.showPlatformTag = false;
+        }
 
         if (version >= 3) {
           return { ...state, imageSettings } as unknown as Partial<AppState>;
@@ -498,6 +503,11 @@ export const useAppStore = create<AppState>()(
         }
         if ('backgroundImage' in migratedSettings) {
           migratedSettings.backgroundImage = null;
+        }
+        const tagOverride = migratedSettings.platformTagOverride;
+        if (tagOverride === 'amazon' || tagOverride === 'tidal') {
+          delete migratedSettings.platformTagOverride;
+          migratedSettings.showPlatformTag = false;
         }
         return {
           ...current,

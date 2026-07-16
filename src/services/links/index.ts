@@ -3,8 +3,6 @@ import { loadFromAppleUrl, parseAppleMusicUrl } from './apple';
 import { loadFromDeezerUrl, parseDeezerUrl } from './deezer';
 import { loadFromSpotifyUrl, parseSpotifyUrl, parseSpotifyAlbumUrl } from './spotify';
 import { loadFromYouTubeUrl, parseYouTubeUrl } from './youtube';
-import { loadFromTidalUrl, parseTidalUrl } from './tidal';
-import { loadFromAmazonUrl, parseAmazonMusicUrl } from './amazon';
 import type { LinkLoadResult } from './types';
 import { trackEvent } from '@/utils/analytics';
 
@@ -25,8 +23,6 @@ export function detectPlatform(url: string): MusicPlatform | null {
   if (parseAppleMusicUrl(trimmed)) return 'apple';
   if (parseDeezerUrl(trimmed)) return 'deezer';
   if (parseYouTubeUrl(trimmed)) return 'youtube';
-  if (parseTidalUrl(trimmed)) return 'tidal';
-  if (parseAmazonMusicUrl(trimmed)) return 'amazon';
 
   return null;
 }
@@ -50,12 +46,6 @@ export async function loadFromUrl(url: string): Promise<LinkLoadResult | null> {
       break;
     case 'youtube':
       result = await loadFromYouTubeUrl(trimmed);
-      break;
-    case 'tidal':
-      result = await loadFromTidalUrl(trimmed);
-      break;
-    case 'amazon':
-      result = await loadFromAmazonUrl(trimmed);
       break;
   }
 

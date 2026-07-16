@@ -8,7 +8,7 @@ import { detectPlatform, PLATFORM_LABELS } from '@/services/links';
 type Tab = 'search' | 'link';
 
 const SUPPORTED_SERVICES =
-  'Spotify · Apple Music · Deezer · YouTube · Tidal · Amazon Music';
+  'Spotify · Apple Music · Deezer · YouTube Music';
 
 const SAMPLE_SUGGESTIONS = [
   'Radiohead Creep',
@@ -122,6 +122,7 @@ export default function SearchScreen() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Artist, song name..."
+                  aria-label="Search by artist or song name"
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-white placeholder-neutral-600 text-[13px] outline-none focus:border-white/15 focus:bg-white/[0.07] transition-all disabled:opacity-40"
                 />
@@ -158,6 +159,7 @@ export default function SearchScreen() {
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="Paste a track link from any service..."
+                  aria-label="Paste a music track link"
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-white placeholder-neutral-600 text-[13px] outline-none focus:border-white/15 focus:bg-white/[0.07] transition-all disabled:opacity-40"
                 />

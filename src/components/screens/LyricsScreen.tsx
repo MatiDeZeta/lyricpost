@@ -337,7 +337,7 @@ export default function LyricsScreen() {
                   </button>
                   <button
                     onClick={() => startEdit(index, line.text)}
-                    className={`p-1.5 mr-1 rounded opacity-0 group-hover/row:opacity-100 transition-opacity ${
+                    className={`p-1.5 mr-1 rounded transition-colors ${
                       isSelected
                         ? 'text-black/60 hover:text-black hover:bg-black/[0.06]'
                         : 'text-neutral-600 hover:text-white hover:bg-white/[0.06]'

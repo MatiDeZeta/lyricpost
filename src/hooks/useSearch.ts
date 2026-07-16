@@ -47,7 +47,7 @@ export function useSearch() {
     const platform = detectPlatform(trimmed);
     if (!platform) {
       state.setError(
-        'Unsupported link. Try Apple Music, Spotify, Deezer, YouTube, Tidal, or Amazon Music.'
+        'Unsupported link. Try Apple Music, Spotify, Deezer, or YouTube Music.'
       );
       return;
     }
@@ -101,10 +101,8 @@ function platformLabel(platform: MusicPlatform): string {
   const labels: Record<MusicPlatform, string> = {
     spotify: 'Spotify',
     apple: 'Apple Music',
-    youtube: 'YouTube',
-    tidal: 'Tidal',
+    youtube: 'YouTube Music',
     deezer: 'Deezer',
-    amazon: 'Amazon Music',
     search: 'search',
   };
   return labels[platform];

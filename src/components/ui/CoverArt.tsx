@@ -81,8 +81,10 @@ export default function CoverArt({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className={`absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover/cover:opacity-100 transition-opacity rounded-[inherit] ${
-              missing ? 'opacity-100 bg-black/40' : ''
+            className={`absolute z-10 flex items-center justify-center rounded-md bg-black/55 text-white transition-opacity ${
+              missing
+                ? 'inset-0 rounded-[inherit] bg-black/40'
+                : 'bottom-1.5 right-1.5 w-7 h-7 sm:inset-0 sm:w-auto sm:h-auto sm:rounded-[inherit] sm:bg-black/50 sm:opacity-0 sm:group-hover/cover:opacity-100 focus-visible:opacity-100 focus-visible:inset-0 focus-visible:w-auto focus-visible:h-auto focus-visible:rounded-[inherit]'
             }`}
             aria-label="Upload cover"
             title="Upload cover"
