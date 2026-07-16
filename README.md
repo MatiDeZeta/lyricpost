@@ -4,33 +4,105 @@
 
 ## About
 
-LyricPost lets you search for any song, pick your favourite lines, and export a beautiful shareable image. Paste links from **Spotify, Apple Music, Deezer, or YouTube Music** — or search by name.
+LyricPost is a web app that turns song lyrics into shareable images. Search by name or paste a streaming link, pick the lines you want, customize the card, and export it — ready for Instagram, X, TikTok, or anywhere else.
 
-### Highlights
+## How it works
 
-- **Multi-platform links** — paste track URLs from major streaming services
-- **Cover art** — filters Last.fm placeholders; auto-fetches from platform thumbs + iTunes Search; manual upload per song (session)
-- **History drawer** — restore past exports with thumbnails (up to 30, compressed)
-- **Templates** — built-in Minimal / Tape / Poster + save your own
-- **Export** — PNG / JPG / SVG, 1x–4x resolution, transparent modes, clipboard, Web Share API
-- **Platform tags** — optional streaming-service logo on exports
-- **Shareable URLs** — copy a link that re-opens the same song
-- **Lyrics** — drag-reorder selection, inline edit, custom lines, karaoke preview for synced lyrics
-- **Platform ratios** — IG Post, Story, X, TikTok, and generic presets
+| Step | Screen | What you do |
+|------|--------|-------------|
+| 1 | **Search** | Search by artist/song name, or paste a track URL |
+| 2 | **Pick** | Choose a song from results (skipped when you paste a direct link) |
+| 3 | **Lyrics** | Select, edit, and reorder lines |
+| 4 | **Export** | Style the card and save / copy / share |
 
-## Tech Stack
+## Features
 
-- **React 19.2** + **TypeScript 6** + **Vite 8**
-- **TailwindCSS v4.3** + **Framer Motion 12.40**
-- **Zustand 5** with `persist` (safe storage + quota trim)
-- **Vercel serverless** — Last.fm API proxy (key hidden server-side)
-- **html-to-image** for export (with CORS inlining for covers)
+### Search
+
+- Search by artist and song name (Last.fm)
+- Recent searches (up to 6), clearable
+- Paste track URLs from:
+  - Spotify (including short links)
+  - Apple Music
+  - Deezer
+  - YouTube Music / YouTube
+
+### Shareable links
+
+- Copy a link that re-opens the same song (`?link=` for platform URLs, `?q=` for name search)
+- Available from the Lyrics and Export screens
+- Deep links are handled on app load
+
+### Lyrics
+
+- Toggle lines on/off; select all or clear
+- Drag-reorder selected lines
+- Inline edit any line
+- Add custom lines (works even when no lyrics are found)
+- Karaoke preview for synced lyrics (play/pause, seek, select while previewing)
+- Copy selected lyrics to the clipboard
+- Upload a custom cover for the session
+
+### Image editor
+
+**Background**
+
+- Solid colors (presets + custom picker + shuffle)
+- Colors pulled from the cover art palette
+- Gradients (from / to / angle)
+- Background image upload with opacity and blur
+- Toggles: light text, platform tag, drop shadow, watermark
+
+**Text**
+
+- Fonts: Poppins, Inter, Playfair Display
+- Lyric size (12–32px) and line spacing (1.1–2.8)
+- Show / hide cover, title, and artist
+- Glyph presets for CJK (TW, CN, HK, JP, KR)
+
+**Layout**
+
+- Card width (240–600px)
+- Aspect ratios: Free, 1:1, 4:5, 9:16
+- Platform presets: IG Post, IG 4:5, IG Story, X, TikTok
+- Output format: PNG, JPG, SVG
+- Resolution: 1x, 2x, 4x
+
+**Templates**
+
+- Built-in: Minimal, Tape, Poster
+- Save your current settings as a named template; delete user templates anytime
+
+### Export
+
+| Mode | Result |
+|------|--------|
+| **Full image** | Card as shown (background, lyrics, header, tags) |
+| **No background** | Header + lyrics on a transparent PNG |
+| **Lyrics only** | Lyric lines only on a transparent PNG |
+| **Album cover** | Cover art file only |
+
+- Save to disk, copy image to clipboard (PNG), or use the Web Share API when available
+- History drawer: up to 30 exports with thumbnails; restore settings and lyrics, download thumb, or delete entries
+
+## Keyboard shortcuts
+
+- **Esc** — closes the history drawer first; otherwise goes back one wizard step. With karaoke open, closes the modal without stepping back. Cancels inline lyric / template editing without leaving the step.
+- **Arrow keys + Enter** — navigate and open songs in the results grid
+
+## Tech stack
+
+- **React 19** + **TypeScript** + **Vite 8**
+- **Tailwind CSS v4** + **Framer Motion**
+- **Zustand** with persist (safe storage + quota trim)
+- **Vercel serverless** — Last.fm and URL resolve proxies (API keys stay server-side)
+- **html-to-image** for export (external images inlined for CORS)
 
 ## Data sources
 
 - Song search — [Last.fm](https://www.last.fm/) API (proxied via `/api/lastfm`)
 - Link paste — Spotify oEmbed, Apple/iTunes Lookup, Deezer API, YouTube oEmbed
-- Cover fallback — [iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/) (no key)
+- Cover fallback — [iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/) (no key) + platform thumbs; Last.fm placeholders filtered out
 - Lyrics — [lrclib](https://lrclib.net/docs)
 
 ## Local setup
@@ -51,7 +123,16 @@ LyricPost lets you search for any song, pick your favourite lines, and export a 
    ```bash
    npx vercel dev
    ```
-   Or use `npm run dev` with Vite proxy (configured to `localhost:3000`) while `vercel dev` runs on port 3000.
+   Or use `npm run dev` with the Vite proxy (to `localhost:3000`) while `vercel dev` runs on port 3000.
+
+### Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Typecheck + production build |
+| `npm run lint` | ESLint |
+| `npm run preview` | Preview production build |
 
 ## Build & deploy
 
@@ -63,16 +144,11 @@ Deploy to **Vercel** (recommended). Set environment variables:
 
 | Variable | Where | Required |
 |----------|-------|----------|
-| `LASTFM_API_KEY` | Server | Yes |
+| `LASTFM_API_KEY` | Server | Yes (for search) |
 | `VITE_PLAUSIBLE_DOMAIN` | Client | No |
-| `VITE_SITE_URL` | Client | No (canonical/share/OG URLs) |
+| `VITE_SITE_URL` | Client | No (canonical / share / OG URLs) |
 
 After changing `package.json`, run `npm install` and commit `package-lock.json`.
-
-## Keyboard shortcuts
-
-- **Esc** — back one step (closes history drawer first)
-- **Arrow keys + Enter** — navigate song results grid
 
 ## Legal
 
